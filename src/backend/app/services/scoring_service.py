@@ -126,7 +126,7 @@ class ScoringService:
 
             content_dict = {
                 "id": content.id,
-                "plex_key": content.plex_key,
+                "jellyfin_id": content.jellyfin_id,
                 "title": content.title,
                 "type": content.type,
                 "duration_ms": content.duration_ms,

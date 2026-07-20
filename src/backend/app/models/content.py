@@ -10,11 +10,11 @@ from app.models.base import BaseModel
 
 
 class Content(BaseModel):
-    """Media item from Plex library."""
+    """Media item from Jellyfin library."""
 
     __tablename__ = "contents"
 
-    plex_key: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    jellyfin_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     type: Mapped[str] = mapped_column(String(20), nullable=False)  # movie/episode/trailer
     duration_ms: Mapped[int] = mapped_column(Integer, nullable=False)

@@ -1,10 +1,10 @@
 # 📺 SmarTunarr
 
-[![GitHub](https://img.shields.io/github/v/tag/sharkhunterr/smartunarr?label=version&color=blue)](https://github.com/sharkhunterr/smartunarr/releases)
-[![Docker Pulls](https://img.shields.io/docker/pulls/sharkhunterr/smartunarr?color=2496ED)](https://hub.docker.com/r/sharkhunterr/smartunarr)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/sharkhunterr/smartunarr/blob/master/LICENSE)
+[![GitHub](https://img.shields.io/github/v/tag/piperlebau/smartunarr?label=version&color=blue)](https://github.com/piperlebau/smartunarr/releases)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io-2496ED?logo=docker&logoColor=white)](https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/piperlebau/smartunarr/blob/master/LICENSE)
 
-**Smart TV Channel Programming** — Intelligent scheduling and programming for Tunarr channels using Plex content and AI-powered optimization.
+**Smart TV Channel Programming** — Intelligent scheduling and programming for Tunarr channels using Jellyfin content and AI-powered optimization.
 
 ---
 
@@ -12,10 +12,10 @@
 
 ```bash
 # Pull the image
-docker pull sharkhunterr/smartunarr:latest
+docker pull ghcr.io/piperlebau/smartunarr:latest
 
 # Run with Docker Compose
-curl -o docker-compose.yml https://raw.githubusercontent.com/sharkhunterr/smartunarr/master/docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/piperlebau/smartunarr/master/docker/docker-compose.yml
 docker compose up -d
 ```
 
@@ -41,7 +41,7 @@ docker compose up -d
 
 ✅ **Profile-based Scoring** — Customizable content scoring profiles
 
-✅ **Plex Integration** — Direct connection to your Plex libraries
+✅ **Jellyfin Integration** — Direct connection to your Jellyfin libraries
 
 ✅ **Tunarr Integration** — Seamless channel management
 
@@ -64,7 +64,7 @@ version: '3.8'
 
 services:
   smartunarr:
-    image: sharkhunterr/smartunarr:latest
+    image: ghcr.io/piperlebau/smartunarr:latest
     container_name: smartunarr
     ports:
       - "3000:3000"   # Web UI
@@ -99,7 +99,7 @@ volumes:
 
 ```bash
 # Pin to specific version
-docker pull sharkhunterr/smartunarr:v0.1.0
+docker pull ghcr.io/piperlebau/smartunarr:v0.1.0
 ```
 
 ---
@@ -116,8 +116,8 @@ docker image prune -f
 
 ## 📚 Documentation
 
-- **🐳 [Docker Guide](https://github.com/sharkhunterr/smartunarr/blob/master/docker/README.md)** — Complete deployment guide
-- **📘 [GitHub](https://github.com/sharkhunterr/smartunarr)** — Source code and docs
+- **🐳 [Docker Guide](https://github.com/piperlebau/smartunarr/blob/master/docker/README.md)** — Complete deployment guide
+- **📘 [GitHub](https://github.com/piperlebau/smartunarr)** — Source code and docs
 
 ---
 
@@ -139,7 +139,7 @@ docker image prune -f
 
 ## 📄 License
 
-MIT License - see [LICENSE](https://github.com/sharkhunterr/smartunarr/blob/master/LICENSE)
+MIT License - see [LICENSE](https://github.com/piperlebau/smartunarr/blob/master/LICENSE)
 
 ---
 
@@ -147,6 +147,6 @@ MIT License - see [LICENSE](https://github.com/sharkhunterr/smartunarr/blob/mast
 
 **Built with Claude Code 🤖 for the Tunarr community 📺**
 
-[⭐ Star on GitHub](https://github.com/sharkhunterr/smartunarr) • [🐛 Report Bug](https://github.com/sharkhunterr/smartunarr/issues) • [💡 Request Feature](https://github.com/sharkhunterr/smartunarr/issues)
+[⭐ Star on GitHub](https://github.com/piperlebau/smartunarr) • [🐛 Report Bug](https://github.com/piperlebau/smartunarr/issues) • [💡 Request Feature](https://github.com/piperlebau/smartunarr/issues)
 
 </div>

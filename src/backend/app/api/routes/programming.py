@@ -19,7 +19,7 @@ from app.db.database import async_session_maker, get_session
 from app.models.profile import Profile
 from app.services.content_enrichment_service import ContentEnrichmentService
 from app.services.history_service import HistoryService
-from app.services.plex_service import PlexService
+from app.services.jellyfin_service import JellyfinService
 from app.services.result_service import ResultService
 from app.services.service_config_service import ServiceConfigService
 from app.services.tmdb_service import TMDBService
@@ -40,7 +40,7 @@ class ProgrammingRequest(BaseModel):
     profile_id: str
     iterations: int = 10
     randomness: float = 0.3
-    cache_mode: str = "full"  # none, plex_only, tmdb_only, cache_only, full, enrich_cache
+    cache_mode: str = "full"  # none, jellyfin_only, tmdb_only, cache_only, full, enrich_cache
     preview_only: bool = False
     replace_forbidden: bool = False  # Replace forbidden content in best iteration with alternatives
     improve_best: bool = False  # Upgrade programs with better ones from other iterations
@@ -136,7 +136,7 @@ async def _run_programming(
                     ProgressStep("enrich_existing", "Enrichissement cache existant", "pending")
                 )
 
-            steps.append(ProgressStep("plex", "Récupération Plex", "pending"))
+            steps.append(ProgressStep("jellyfin", "Récupération Jellyfin", "pending"))
 
             if use_tmdb:
                 steps.append(ProgressStep("tmdb", "Enrichissement TMDB", "pending"))
@@ -175,13 +175,13 @@ async def _run_programming(
             # Load services configuration
             config_service = ServiceConfigService(session)
 
-            # Get Plex config
-            plex_config = await config_service.get_service("plex")
-            if not plex_config or not plex_config.url:
-                raise ValueError("Plex not configured")
+            # Get Jellyfin config
+            jellyfin_config = await config_service.get_service("jellyfin")
+            if not jellyfin_config or not jellyfin_config.url:
+                raise ValueError("Jellyfin not configured")
 
-            creds = config_service.get_decrypted_credentials(plex_config)
-            plex = PlexService(plex_config.url, creds.get("token", ""))
+            creds = config_service.get_decrypted_credentials(jellyfin_config)
+            jellyfin = JellyfinService(jellyfin_config.url, creds.get("token", ""))
 
             await job_manager.update_step_status(job_id, "config", "completed")
 
@@ -329,7 +329,7 @@ async def _run_programming(
 
                                     # Update in database
                                     await enrichment_service.update_content_meta(
-                                        content.get("plex_key", ""), meta
+                                        content.get("jellyfin_id", ""), meta
                                     )
                                     enriched_count += 1
                         except Exception as e:
@@ -347,12 +347,12 @@ async def _run_programming(
                         job_id, "enrich_existing", "completed", "Tout est déjà enrichi"
                     )
 
-            # Step: Fetch from Plex
-            await job_manager.update_step_status(job_id, "plex", "running")
-            plex_items: list[dict[str, Any]] = []
+            # Step: Fetch from Jellyfin
+            await job_manager.update_step_status(job_id, "jellyfin", "running")
+            jellyfin_items: list[dict[str, Any]] = []
 
-            # Get cached plex_keys to avoid re-fetching
-            cached_keys = {c[0].get("plex_key") for c in all_contents if c[0].get("plex_key")}
+            # Get cached jellyfin_ids to avoid re-fetching
+            cached_keys = {c[0].get("jellyfin_id") for c in all_contents if c[0].get("jellyfin_id")}
 
             for lib_idx, lib_config in enumerate(libraries):
                 lib_id = lib_config.get("id", "")
@@ -371,26 +371,26 @@ async def _run_programming(
                     total_libraries=total_libraries,
                 )
                 await job_manager.update_step_status(
-                    job_id, "plex", "running", f"{lib_idx + 1}/{total_libraries} - {lib_name}"
+                    job_id, "jellyfin", "running", f"{lib_idx + 1}/{total_libraries} - {lib_name}"
                 )
 
                 try:
-                    items = plex.get_library_content(lib_id)  # No limit - fetch all content
+                    items = jellyfin.get_library_content(lib_id)  # No limit - fetch all content
                     logger.info(f"Library {lib_id} ({lib_name}): fetched {len(items)} items")
 
                     # Filter out already cached items
-                    new_items = [item for item in items if item.get("plex_key") not in cached_keys]
-                    plex_items.extend(new_items)
+                    new_items = [item for item in items if item.get("jellyfin_id") not in cached_keys]
+                    jellyfin_items.extend(new_items)
                 except Exception as e:
                     logger.warning(f"Failed to fetch library {lib_id}: {e}")
 
-            plex_detail = f"{len(plex_items)} nouveaux contenus Plex"
-            await job_manager.update_step_status(job_id, "plex", "completed", plex_detail)
+            jellyfin_detail = f"{len(jellyfin_items)} nouveaux contenus Jellyfin"
+            await job_manager.update_step_status(job_id, "jellyfin", "completed", jellyfin_detail)
 
             # Step: TMDB enrichment if enabled
-            if use_tmdb and tmdb_service and plex_items:
+            if use_tmdb and tmdb_service and jellyfin_items:
                 await job_manager.update_step_status(job_id, "tmdb", "running")
-                items_to_enrich = min(len(plex_items), 100)  # Limit to avoid too many API calls
+                items_to_enrich = min(len(jellyfin_items), 100)  # Limit to avoid too many API calls
                 await job_manager.update_job_progress(
                     job_id,
                     30,
@@ -398,7 +398,7 @@ async def _run_programming(
                 )
 
                 enriched_count = 0
-                for idx, item in enumerate(plex_items[:items_to_enrich]):
+                for idx, item in enumerate(jellyfin_items[:items_to_enrich]):
                     if idx % 10 == 0:
                         await job_manager.update_step_status(
                             job_id, "tmdb", "running", f"{idx}/{items_to_enrich} enrichis"
@@ -434,28 +434,28 @@ async def _run_programming(
                 logger.info(f"TMDB enriched {enriched_count} items")
 
             # Step: Update cache if enabled, otherwise add items directly
-            if use_cache and plex_items:
+            if use_cache and jellyfin_items:
                 await job_manager.update_step_status(job_id, "cache_write", "running")
                 await job_manager.update_job_progress(job_id, 48, "Mise à jour du cache...")
 
                 # Add new items to cache and to all_contents
-                for item in plex_items:
+                for item in jellyfin_items:
                     content, meta = await enrichment_service.get_or_cache_content(
-                        item.get("plex_key", ""),
+                        item.get("jellyfin_id", ""),
                         item,
                     )
                     all_contents.append((content, meta))
 
-                cache_write_detail = f"{len(plex_items)} contenus ajoutés au cache"
+                cache_write_detail = f"{len(jellyfin_items)} contenus ajoutés au cache"
                 await job_manager.update_step_status(
                     job_id, "cache_write", "completed", cache_write_detail
                 )
-            elif plex_items:
+            elif jellyfin_items:
                 # No cache mode: add items directly with enriched data
-                for item in plex_items:
+                for item in jellyfin_items:
                     content = {
-                        "id": item.get("plex_key", item.get("rating_key", "")),
-                        "plex_key": item.get("plex_key", ""),
+                        "id": item.get("jellyfin_id", item.get("rating_key", "")),
+                        "jellyfin_id": item.get("jellyfin_id", ""),
                         "title": item.get("title", ""),
                         "type": item.get("type", "movie"),
                         "duration_ms": item.get("duration_ms", 0),
@@ -464,7 +464,7 @@ async def _run_programming(
                     }
                     meta = {
                         "genres": item.get("genres", []),
-                        # Use TMDB rating if available, fallback to Plex rating
+                        # Use TMDB rating if available, fallback to Jellyfin rating
                         "tmdb_rating": item.get("tmdb_rating") or item.get("rating"),
                         "vote_count": item.get("vote_count", 0),
                         "content_rating": item.get("content_rating"),
@@ -475,9 +475,9 @@ async def _run_programming(
                     all_contents.append((content, meta))
 
             if not all_contents:
-                raise ValueError("No content found in Plex libraries")
+                raise ValueError("No content found in Jellyfin libraries")
 
-            f"{len(all_contents)} contenus ({cached_count} cache + {len(plex_items)} Plex)"
+            f"{len(all_contents)} contenus ({cached_count} cache + {len(jellyfin_items)} Jellyfin)"
             await job_manager.update_job_progress(
                 job_id,
                 50,
@@ -1007,7 +1007,7 @@ async def _run_programming(
                             "content_rating": prog.content_meta.get("content_rating")
                             if prog.content_meta
                             else None,
-                            "plex_key": prog.content.get("plex_key", ""),
+                            "jellyfin_id": prog.content.get("jellyfin_id", ""),
                             "block_name": prog.block_name,
                             "score": {
                                 "total": prog.score.total_score,
@@ -1164,16 +1164,16 @@ async def _run_programming(
                         tunarr_creds.get("password"),
                     )
 
-                    # Get Plex server info from Tunarr
-                    plex_servers = await tunarr_service.adapter.get_plex_servers()
-                    plex_server_name = "NAS-Jérémie"  # Default fallback
-                    plex_server_id = "caa0e3c3-67d7-4533-8d8d-616ab86bf4bc"  # Default fallback
-                    if plex_servers:
-                        # Use the first Plex server configured in Tunarr
-                        plex_server_name = plex_servers[0].get("name", plex_server_name)
-                        plex_server_id = plex_servers[0].get("id", plex_server_id)
+                    # Get Jellyfin media source info from Tunarr
+                    jellyfin_servers = await tunarr_service.adapter.get_jellyfin_servers()
+                    jellyfin_server_name = "Jellyfin"  # Default fallback
+                    jellyfin_server_id = ""  # Default fallback
+                    if jellyfin_servers:
+                        # Use the first Jellyfin source configured in Tunarr
+                        jellyfin_server_name = jellyfin_servers[0].get("name", jellyfin_server_name)
+                        jellyfin_server_id = jellyfin_servers[0].get("id", jellyfin_server_id)
                         logger.info(
-                            f"Using Plex server from Tunarr: {plex_server_name} (ID: {plex_server_id})"
+                            f"Using Jellyfin server from Tunarr: {jellyfin_server_name} (ID: {jellyfin_server_id})"
                         )
 
                     # Convert programs to Tunarr format
@@ -1181,8 +1181,8 @@ async def _run_programming(
                     for prog in result.programs:
                         tunarr_programs.append(
                             {
-                                "plex_key": prog.content.get("plex_key", ""),
-                                "content_plex_key": prog.content.get("plex_key", ""),
+                                "jellyfin_id": prog.content.get("jellyfin_id", ""),
+                                "content_jellyfin_id": prog.content.get("jellyfin_id", ""),
                                 "title": prog.content.get("title", ""),
                                 "duration_ms": prog.content.get("duration_ms", 0),
                                 "type": prog.content.get("type", "movie"),
@@ -1197,8 +1197,8 @@ async def _run_programming(
                     success = await tunarr_service.update_channel_programming(
                         request.channel_id,
                         tunarr_programs,
-                        plex_server_name=plex_server_name,
-                        plex_server_id=plex_server_id,
+                        jellyfin_server_name=jellyfin_server_name,
+                        jellyfin_server_id=jellyfin_server_id,
                     )
 
                     if success:
@@ -1673,7 +1673,7 @@ async def apply_programming(
                     "duration_ms": int(prog["duration_min"] * 60 * 1000),  # ms
                     "title": prog["title"],
                     "type": prog["type"],
-                    "plex_key": prog.get("plex_key"),
+                    "jellyfin_id": prog.get("jellyfin_id"),
                     "year": prog.get("year"),
                     "content_rating": prog.get("content_rating"),
                 }

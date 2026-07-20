@@ -308,10 +308,10 @@ async def _run_scoring(
 
                 for i, prog in enumerate(programs_data):
                     # Try multiple key formats used by Tunarr
-                    plex_key = prog.get("externalKey", prog.get("plexKey", prog.get("id", "")))
+                    jellyfin_id = prog.get("externalKey", prog.get("jellyfinId", prog.get("id", "")))
 
-                    if plex_key:
-                        cached = await enrichment_service.get_cached_content(plex_key)
+                    if jellyfin_id:
+                        cached = await enrichment_service.get_cached_content(jellyfin_id)
                         if cached:
                             content, meta = cached
                             prog["_cached_content"] = content
@@ -405,10 +405,10 @@ async def _run_scoring(
                             tmdb_enriched += 1
 
                             # Save to cache for future "cache only" requests
-                            plex_key = prog.get(
-                                "externalKey", prog.get("plexKey", prog.get("id", ""))
+                            jellyfin_id = prog.get(
+                                "externalKey", prog.get("jellyfinId", prog.get("id", ""))
                             )
-                            if plex_key:
+                            if jellyfin_id:
                                 content_data = {
                                     "title": title,
                                     "type": prog_type,
@@ -416,7 +416,7 @@ async def _run_scoring(
                                     "year": year,
                                 }
                                 await enrichment_service.save_content_with_meta(
-                                    plex_key, content_data, meta_data
+                                    jellyfin_id, content_data, meta_data
                                 )
 
                             if idx < 3:  # Log first 3 enrichments
@@ -509,8 +509,8 @@ async def _run_scoring(
                                 content_year = None
                     content = {
                         "id": prog.get("id", ""),
-                        "plex_key": prog.get(
-                            "externalKey", prog.get("plexKey", prog.get("id", ""))
+                        "jellyfin_id": prog.get(
+                            "externalKey", prog.get("jellyfinId", prog.get("id", ""))
                         ),
                         "title": prog.get("title", "Unknown"),
                         "type": content_type,
@@ -703,7 +703,7 @@ async def _run_scoring(
                         "content_rating": meta.get("age_rating") or meta.get("content_rating")
                         if meta
                         else None,
-                        "plex_key": content.get("plex_key", ""),
+                        "jellyfin_id": content.get("jellyfin_id", ""),
                         "block_name": block.get("name") if block else None,
                         "score": {
                             "total": score_result.total_score,

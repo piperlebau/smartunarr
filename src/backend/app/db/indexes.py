@@ -22,8 +22,8 @@ INDEXES = {
     ],
     "contents": [
         (
-            "idx_contents_plex_key",
-            "CREATE INDEX IF NOT EXISTS idx_contents_plex_key ON contents(plex_key)",
+            "idx_contents_jellyfin_id",
+            "CREATE INDEX IF NOT EXISTS idx_contents_jellyfin_id ON contents(jellyfin_id)",
         ),
         ("idx_contents_type", "CREATE INDEX IF NOT EXISTS idx_contents_type ON contents(type)"),
         ("idx_contents_title", "CREATE INDEX IF NOT EXISTS idx_contents_title ON contents(title)"),
@@ -277,7 +277,7 @@ def get_index_recommendations() -> list[dict[str, str]]:
         },
         {
             "table": "contents",
-            "recommendation": "Index on plex_key for content lookup",
-            "query_pattern": "SELECT * FROM contents WHERE plex_key = ?",
+            "recommendation": "Index on jellyfin_id for content lookup",
+            "query_pattern": "SELECT * FROM contents WHERE jellyfin_id = ?",
         },
     ]

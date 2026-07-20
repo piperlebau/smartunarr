@@ -34,7 +34,7 @@ class ScheduledProgram:
         """Convert to dictionary."""
         return {
             "content_id": self.content.get("id"),
-            "content_plex_key": self.content.get("plex_key"),
+            "content_jellyfin_id": self.content.get("jellyfin_id"),
             "title": self.content.get("title"),
             "type": self.content.get("type"),
             "duration_ms": self.content.get("duration_ms"),
@@ -296,7 +296,7 @@ class ProgrammingGenerator:
 
         # Pre-place mandatory content at strategic times
         for content, meta in mandatory_contents:
-            content_id = content.get("plex_key", content.get("id", ""))
+            content_id = content.get("jellyfin_id", content.get("id", ""))
             if content_id:
                 used_content_ids.add(content_id)
 
@@ -304,7 +304,7 @@ class ProgrammingGenerator:
         base_available = [
             (c, m)
             for c, m in contents
-            if c.get("plex_key", c.get("id", "")) not in used_content_ids
+            if c.get("jellyfin_id", c.get("id", "")) not in used_content_ids
         ]
 
         # Track current block name to detect block changes
@@ -378,7 +378,7 @@ class ProgrammingGenerator:
                 break
 
             content, meta, score = selected
-            content_id = content.get("plex_key", content.get("id", ""))
+            content_id = content.get("jellyfin_id", content.get("id", ""))
 
             # Calculate end time
             duration_ms = content.get("duration_ms", 0)
@@ -412,12 +412,12 @@ class ProgrammingGenerator:
             base_available = [
                 (c, m)
                 for c, m in base_available
-                if c.get("plex_key", c.get("id", "")) != content_id
+                if c.get("jellyfin_id", c.get("id", "")) != content_id
             ]
             block_filtered = [
                 (c, m)
                 for c, m in block_filtered
-                if c.get("plex_key", c.get("id", "")) != content_id
+                if c.get("jellyfin_id", c.get("id", "")) != content_id
             ]
 
         # Post-process: First recalculate block names based on actual start times
@@ -940,7 +940,7 @@ class ProgrammingGenerator:
         filtered = []
         for content, meta in contents:
             # Check ID
-            content_id = content.get("plex_key", "")
+            content_id = content.get("jellyfin_id", "")
             if content_id in forbidden_ids:
                 continue
 
@@ -978,7 +978,7 @@ class ProgrammingGenerator:
         return [
             (content, meta)
             for content, meta in contents
-            if content.get("plex_key", "") in mandatory_ids
+            if content.get("jellyfin_id", "") in mandatory_ids
         ]
 
     def _prefilter_for_block(
@@ -1516,7 +1516,7 @@ class ProgrammingGenerator:
         # Track used content IDs to avoid duplicates
         used_content_ids: set[str] = set()
         for prog in best_result.programs:
-            content_id = prog.content.get("plex_key", prog.content.get("id", ""))
+            content_id = prog.content.get("jellyfin_id", prog.content.get("id", ""))
             if content_id:
                 used_content_ids.add(content_id)
 
@@ -1550,7 +1550,7 @@ class ProgrammingGenerator:
         for prog_idx, forbidden_prog in forbidden_programs:
             block_name = forbidden_prog.block_name
             forbidden_id = forbidden_prog.content.get(
-                "plex_key", forbidden_prog.content.get("id", "")
+                "jellyfin_id", forbidden_prog.content.get("id", "")
             )
 
             replacement: ScheduledProgram | None = None
@@ -1558,7 +1558,7 @@ class ProgrammingGenerator:
             # Strategy 1: Find replacement from other iterations
             if block_name in other_iterations_map:
                 for alt_prog, _ in other_iterations_map[block_name]:
-                    alt_id = alt_prog.content.get("plex_key", alt_prog.content.get("id", ""))
+                    alt_id = alt_prog.content.get("jellyfin_id", alt_prog.content.get("id", ""))
                     if alt_id and alt_id not in used_content_ids:
                         # Found a valid replacement from another iteration
                         # Create a new ScheduledProgram with adjusted times
@@ -1590,7 +1590,7 @@ class ProgrammingGenerator:
 
                 # Find best non-forbidden content not already used
                 for content, meta in block_filtered:
-                    content_id = content.get("plex_key", content.get("id", ""))
+                    content_id = content.get("jellyfin_id", content.get("id", ""))
                     if content_id and content_id not in used_content_ids:
                         # Score this content for the current position
                         from app.core.blocks.time_block_manager import TimeBlockManager
@@ -1767,7 +1767,7 @@ class ProgrammingGenerator:
         # Track used content IDs to avoid duplicates
         used_content_ids: set[str] = set()
         for prog in best_result.programs:
-            content_id = prog.content.get("plex_key", prog.content.get("id", ""))
+            content_id = prog.content.get("jellyfin_id", prog.content.get("id", ""))
             if content_id:
                 used_content_ids.add(content_id)
 
@@ -1778,7 +1778,7 @@ class ProgrammingGenerator:
         for prog_idx, current_prog in enumerate(best_result.programs):
             block_name = current_prog.block_name
             current_score = current_prog.score.total_score or 0.0
-            current_id = current_prog.content.get("plex_key", current_prog.content.get("id", ""))
+            current_id = current_prog.content.get("jellyfin_id", current_prog.content.get("id", ""))
 
             if block_name not in other_iterations_map:
                 continue
@@ -1786,7 +1786,7 @@ class ProgrammingGenerator:
             # Find candidates with higher scores that aren't already used and have no forbidden violations
             candidates: list[tuple[ScheduledProgram, ProgrammingResult]] = []
             for alt_prog, alt_result in other_iterations_map[block_name]:
-                alt_id = alt_prog.content.get("plex_key", alt_prog.content.get("id", ""))
+                alt_id = alt_prog.content.get("jellyfin_id", alt_prog.content.get("id", ""))
                 alt_score = alt_prog.score.total_score or 0.0
                 # Skip programs with forbidden violations
                 has_forbidden = (
@@ -1808,7 +1808,7 @@ class ProgrammingGenerator:
             selected = self._select_improvement_with_randomness(candidates, randomness)
             if selected:
                 alt_prog, alt_result = selected
-                alt_id = alt_prog.content.get("plex_key", alt_prog.content.get("id", ""))
+                alt_id = alt_prog.content.get("jellyfin_id", alt_prog.content.get("id", ""))
 
                 # Create replacement program with adjusted times
                 replacement = ScheduledProgram(

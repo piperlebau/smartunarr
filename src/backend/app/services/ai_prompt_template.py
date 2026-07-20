@@ -162,7 +162,7 @@ def get_generation_prompt(
 
     Args:
         user_request: User's natural language request
-        available_libraries: Optional list of available Plex libraries
+        available_libraries: Optional list of available Jellyfin libraries
 
     Returns:
         Complete prompt string
@@ -170,7 +170,7 @@ def get_generation_prompt(
     libraries_info = ""
     if available_libraries:
         libraries_info = (
-            "\n\nBIBLIOTHÈQUES PLEX DISPONIBLES (utilise ces IDs dans le champ 'libraries'):\n"
+            "\n\nBIBLIOTHÈQUES JELLYFIN DISPONIBLES (utilise ces IDs dans le champ 'libraries'):\n"
         )
         for lib in available_libraries:
             lib_type = lib.get("type", "movie")
@@ -187,7 +187,7 @@ EXEMPLE DE STRUCTURE JSON VALIDE:
 
 RÈGLES CRITIQUES:
 1. Version DOIT être "6.0"
-2. Le champ "libraries" DOIT utiliser "id" (pas "plex_library_id")
+2. Le champ "libraries" DOIT utiliser "id" (pas "jellyfin_library_id")
 3. Les heures au format "HH:MM" (24h)
 4. Les genres en ANGLAIS (Action, Comedy, Drama, Horror, Thriller, Animation, etc.)
 5. Inclure: description, scoring_weights (avec keywords, collections, cast, temporal), mandatory_forbidden_criteria, strategies, enhanced_criteria
@@ -445,7 +445,7 @@ RECOMMENDED_MODELS = {
         "mistral:7b",
         "phi3:mini",
     ],
-    "complex_schedule": [
+    "comjellyfin_schedule": [
         "qwen3:14b",
         "llama3.1:70b",
         "mixtral:8x7b",
@@ -459,7 +459,7 @@ def get_recommended_model(task: str = "profile_generation") -> str:
     Get the recommended model for a task.
 
     Args:
-        task: Type of task (profile_generation, quick_modification, complex_schedule)
+        task: Type of task (profile_generation, quick_modification, comjellyfin_schedule)
 
     Returns:
         Recommended model name

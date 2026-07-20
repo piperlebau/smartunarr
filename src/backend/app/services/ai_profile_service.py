@@ -86,7 +86,7 @@ class AIProfileService:
 
         Args:
             user_request: User's natural language description
-            available_libraries: Optional list of available Plex libraries
+            available_libraries: Optional list of available Jellyfin libraries
             temperature: Generation temperature (lower = more deterministic)
 
         Returns:

@@ -11,7 +11,7 @@ import type {
   ScoringResult,
   HistoryEntry,
   OllamaModel,
-  PlexLibrary,
+  JellyfinLibrary,
   JobResponse,
   AIGenerateProfileRequest,
   AIGenerateProfileResponse,
@@ -158,7 +158,7 @@ export const cacheApi = {
     return response.data
   },
 
-  refreshFromPlex: async (libraryId?: string): Promise<{ success: boolean; added: number; updated: number; total: number }> => {
+  refreshFromJellyfin: async (libraryId?: string): Promise<{ success: boolean; added: number; updated: number; total: number }> => {
     const params = libraryId ? { library_id: libraryId } : {}
     const response = await client.post('/services/cache/refresh', null, { params })
     return response.data
@@ -178,17 +178,17 @@ export const tunarrApi = {
   }
 }
 
-// Plex API
-export const plexApi = {
-  getLibraries: async (): Promise<PlexLibrary[]> => {
-    const response = await client.get('/services/plex/libraries')
+// Jellyfin API
+export const jellyfinApi = {
+  getLibraries: async (): Promise<JellyfinLibrary[]> => {
+    const response = await client.get('/services/jellyfin/libraries')
     return response.data
   },
 
   getLibraryContent: async (libraryId: string, contentType?: string, limit = 100) => {
     const params: Record<string, unknown> = { limit }
     if (contentType) params.content_type = contentType
-    const response = await client.get(`/services/plex/libraries/${libraryId}/content`, { params })
+    const response = await client.get(`/services/jellyfin/libraries/${libraryId}/content`, { params })
     return response.data
   }
 }

@@ -120,7 +120,7 @@ async def generate_profile(
             status_code=400, detail="profile_name is required when save_profile is True"
         )
 
-    # Use libraries from request if provided, otherwise fetch from Plex
+    # Use libraries from request if provided, otherwise fetch from Jellyfin
     available_libraries = None
     if request.libraries:
         # Convert request libraries to the format expected by AI service
@@ -129,18 +129,18 @@ async def generate_profile(
         ]
         logger.info(f"Using {len(available_libraries)} libraries from request")
     else:
-        # Fallback to Plex libraries
+        # Fallback to Jellyfin libraries
         try:
             config_service = ServiceConfigService(session)
-            plex_service = await config_service.get_service("plex")
-            if plex_service and plex_service.url and plex_service.token:
-                from app.services.plex_service import PlexService
+            jellyfin_service = await config_service.get_service("jellyfin")
+            if jellyfin_service and jellyfin_service.url and jellyfin_service.token:
+                from app.services.jellyfin_service import JellyfinService
 
-                credentials = config_service.get_decrypted_credentials(plex_service)
-                plex = PlexService(plex_service.url, credentials.get("token"))
-                available_libraries = plex.get_libraries()
+                credentials = config_service.get_decrypted_credentials(jellyfin_service)
+                jellyfin = JellyfinService(jellyfin_service.url, credentials.get("token"))
+                available_libraries = jellyfin.get_libraries()
         except Exception as e:
-            logger.warning(f"Could not get Plex libraries for AI context: {e}")
+            logger.warning(f"Could not get Jellyfin libraries for AI context: {e}")
 
     # Initialize AI service
     ai_service = await get_ai_service(session)
@@ -323,7 +323,7 @@ async def get_ai_models(
             "recommended": {
                 "profile_generation": get_recommended_model("profile_generation"),
                 "quick_modification": get_recommended_model("quick_modification"),
-                "complex_schedule": get_recommended_model("complex_schedule"),
+                "comjellyfin_schedule": get_recommended_model("comjellyfin_schedule"),
             },
             "all_recommendations": RECOMMENDED_MODELS,
         }

@@ -15,7 +15,7 @@ class Service(BaseModel):
 
     type: Mapped[str] = mapped_column(
         String(20), nullable=False, unique=True
-    )  # plex/tmdb/tunarr/ollama
+    )  # jellyfin/tmdb/tunarr/ollama
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     api_key: Mapped[str | None] = mapped_column(String(500), nullable=True)  # Encrypted

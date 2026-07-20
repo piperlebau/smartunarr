@@ -4,9 +4,8 @@
 
 **Smart TV Channel Programming for Tunarr**
 
-[![Version](https://img.shields.io/github/v/tag/sharkhunterr/smartunarr?label=version&color=blue)](https://github.com/sharkhunterr/smartunarr/releases)
-[![Docker](https://img.shields.io/docker/v/sharkhunterr/smartunarr?label=docker&color=2496ED)](https://hub.docker.com/r/sharkhunterr/smartunarr)
-[![Docker Pulls](https://img.shields.io/docker/pulls/sharkhunterr/smartunarr?color=2496ED)](https://hub.docker.com/r/sharkhunterr/smartunarr)
+[![Version](https://img.shields.io/github/v/tag/piperlebau/smartunarr?label=version&color=blue)](https://github.com/piperlebau/smartunarr/releases)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io-2496ED?logo=docker&logoColor=white)](https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
@@ -19,7 +18,7 @@
 
 **[Quick Start](#-quick-start)** •
 **[Features](#-features)** •
-**[Docker Hub](https://hub.docker.com/r/sharkhunterr/smartunarr)** •
+**[Container Image](https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr)** •
 **[Documentation](docs/)** •
 **[Screenshots](#-screenshots)**
 
@@ -99,7 +98,7 @@ SmarTunarr is an intelligent TV channel programming system for [Tunarr](https://
 - 📜 Execution history with details
 
 ### 🔌 Service Integration
-- **Plex**: Media library source
+- **Jellyfin**: Media library source
 - **Tunarr**: Channel management & programming
 - **TMDB**: Metadata enrichment & ratings
 - **Ollama**: Local AI model inference
@@ -112,22 +111,22 @@ SmarTunarr is an intelligent TV channel programming system for [Tunarr](https://
 
 ```bash
 # Pull the latest image
-docker pull sharkhunterr/smartunarr:latest
+docker pull ghcr.io/piperlebau/smartunarr:latest
 
 # Run with Docker Compose
-curl -o docker-compose.yml https://raw.githubusercontent.com/sharkhunterr/smartunarr/master/docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/piperlebau/smartunarr/master/docker/docker-compose.yml
 docker compose up -d
 ```
 
 **Access**: http://localhost:3000
 
-📖 **[Complete Docker guide →](docker/README.md)** | **[Docker Hub →](https://hub.docker.com/r/sharkhunterr/smartunarr)**
+📖 **[Complete Docker guide →](docker/README.md)** | **[Docker Hub →](https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr)**
 
 ### Option 2: Local Development
 
 ```bash
 # Clone and setup
-git clone https://github.com/sharkhunterr/smartunarr.git
+git clone https://github.com/piperlebau/smartunarr.git
 cd smartunarr
 npm run setup
 
@@ -152,14 +151,14 @@ SmarTunarr requires minimal configuration to get started:
 environment:
   - LOG_LEVEL=INFO
   - DATABASE_URL=sqlite+aiosqlite:///./smartunarr.db
-  - PLEX_URL=http://your-plex-server:32400
-  - PLEX_TOKEN=your_plex_token
+  - JELLYFIN_URL=http://your-jellyfin-server:8096
+  - JELLYFIN_API_KEY=your_jellyfin_api_key
   - TUNARR_URL=http://your-tunarr-server:8000
 ```
 
 After first launch:
 1. Navigate to **Settings**
-2. Configure **Plex** connection (URL + token)
+2. Configure **Jellyfin** connection (URL + token)
 3. Configure **Tunarr** connection
 4. (Optional) Add **TMDB** API key for metadata
 5. (Optional) Configure **Ollama** for AI features
@@ -291,7 +290,7 @@ flowchart TB
     end
 
     subgraph Services["🔧 External Services"]
-        PLEX[Plex Media Server]
+        JELLYFIN[Jellyfin Media Server]
         TUNARR[Tunarr]
         TMDB[TMDB API]
         OLLAMA[Ollama]
@@ -308,7 +307,7 @@ flowchart TB
     PROG --> DB
     SCHED --> DB
 
-    PROG -->|Fetch Media| PLEX
+    PROG -->|Fetch Media| JELLYFIN
     PROG -->|Apply Schedule| TUNARR
     SCORE -->|Enrich Metadata| TMDB
     API -->|Generate Profiles| OLLAMA
@@ -321,15 +320,15 @@ sequenceDiagram
     participant User as 👤 User
     participant UI as 🖥️ Frontend
     participant API as ⚙️ Backend
-    participant Plex as 📺 Plex
+    participant Jellyfin as 📺 Jellyfin
     participant Tunarr as 📡 Tunarr
 
     User->>UI: Select Channel + Profile
     User->>UI: Start Programming
     UI->>API: POST /programming/generate
 
-    API->>Plex: Fetch Media Library
-    Plex-->>API: Media Items
+    API->>Jellyfin: Fetch Media Library
+    Jellyfin-->>API: Media Items
 
     Note over API: Run N Iterations
     Note over API: Score Each Schedule
@@ -364,21 +363,21 @@ Contributions welcome! Please:
 
 ### Latest Release
 
-Check [Releases](https://github.com/sharkhunterr/smartunarr/releases) for changelogs and downloads.
+Check [Releases](https://github.com/piperlebau/smartunarr/releases) for changelogs and downloads.
 
 ### Docker Images
 
 ```bash
 # Latest stable
-docker pull sharkhunterr/smartunarr:latest
+docker pull ghcr.io/piperlebau/smartunarr:latest
 
 # Specific version
-docker pull sharkhunterr/smartunarr:v0.1.0
+docker pull ghcr.io/piperlebau/smartunarr:v0.1.0
 ```
 
 **Platforms**: `linux/amd64`, `linux/arm64`
 
-**[Docker Hub →](https://hub.docker.com/r/sharkhunterr/smartunarr)** | **[Release automation →](scripts/README.md)**
+**[Docker Hub →](https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr)** | **[Release automation →](scripts/README.md)**
 
 ---
 
@@ -392,7 +391,7 @@ docker pull sharkhunterr/smartunarr:v0.1.0
 
 Special thanks to:
 - [Tunarr](https://github.com/chrisbenincasa/tunarr) - IPTV channel manager
-- [Plex](https://www.plex.tv/) - Media server
+- [Jellyfin](https://jellyfin.org/) - Media server
 - [TMDB](https://www.themoviedb.org/) - Movie database
 - [Ollama](https://ollama.ai/) - Local LLM inference
 
@@ -408,10 +407,10 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 **Built with Claude Code 🤖 for the Tunarr community 📺**
 
-[![GitHub](https://img.shields.io/badge/GitHub-sharkhunterr/smartunarr-181717?logo=github)](https://github.com/sharkhunterr/smartunarr)
-[![Docker Hub](https://img.shields.io/badge/Docker-sharkhunterr/smartunarr-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/sharkhunterr/smartunarr)
+[![GitHub](https://img.shields.io/badge/GitHub-piperlebau/smartunarr-181717?logo=github)](https://github.com/piperlebau/smartunarr)
+[![Docker Hub](https://img.shields.io/badge/Docker-ghcr.io/piperlebau/smartunarr-2496ED?logo=docker&logoColor=white)](https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr)
 [![Documentation](https://img.shields.io/badge/Docs-Read%20Now-blue?logo=bookstack)](docs/)
 
-[⭐ Star on GitHub](https://github.com/sharkhunterr/smartunarr) • [🐛 Report Bug](https://github.com/sharkhunterr/smartunarr/issues) • [💡 Request Feature](https://github.com/sharkhunterr/smartunarr/issues)
+[⭐ Star on GitHub](https://github.com/piperlebau/smartunarr) • [🐛 Report Bug](https://github.com/piperlebau/smartunarr/issues) • [💡 Request Feature](https://github.com/piperlebau/smartunarr/issues)
 
 </div>

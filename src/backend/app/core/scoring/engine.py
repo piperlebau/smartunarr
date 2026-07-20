@@ -224,7 +224,7 @@ class ScoringEngine:
 
         # Check forbidden content IDs
         forbidden_ids = forbidden.get("content_ids", [])
-        content_id = content.get("plex_key", "")
+        content_id = content.get("jellyfin_id", "")
         if content_id in forbidden_ids:
             violations.append(
                 {

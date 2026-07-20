@@ -15,7 +15,6 @@ pydantic-settings>=2.1.0
 httpx>=0.26.0
 
 # External Services
-plexapi>=4.15.0
 ollama>=0.1.0
 
 # Security

@@ -66,15 +66,15 @@
     "cacheMode": "Cache mode",
     "cacheModes": {
       "cacheOnly": "Cache",
-      "cachePlex": "Cache + Plex",
+      "cacheJellyfin": "Cache + Jellyfin",
       "enrich": "Enrich",
-      "plexOnly": "Plex"
+      "jellyfinOnly": "Jellyfin"
     },
     "cacheModeDescriptions": {
       "cacheOnly": "Use only existing cache",
-      "cachePlex": "Cache + new enriched Plex content",
+      "cacheJellyfin": "Cache + new enriched Jellyfin content",
       "enrich": "Re-enrich cache with TMDB",
-      "plexOnly": "Fetch from Plex without cache"
+      "jellyfinOnly": "Fetch from Jellyfin without cache"
     },
     "options": "Options",
     "previewOnly": "Preview only",
@@ -462,10 +462,10 @@
     "testing": "Testing...",
     "saveFailed": "Save failed",
     "connectionFailed": "Connection failed",
-    "plex": {
-      "title": "Plex",
+    "jellyfin": {
+      "title": "Jellyfin",
       "url": "Server URL",
-      "token": "Authentication token"
+      "token": "API key"
     },
     "tunarr": {
       "title": "Tunarr",
@@ -497,7 +497,7 @@
         "cacheOnly": "Cache",
         "cacheTmdb": "Cache + TMDB",
         "tmdbOnly": "TMDB",
-        "plexOnly": "Plex"
+        "jellyfinOnly": "Jellyfin"
       },
       "logRetention": "Log Retention",
       "logRetentionHelp": "Automatically delete logs older than the selected period",
@@ -541,12 +541,12 @@
       "syncHint": "This operation may take several minutes depending on the number of items",
       "enrichedResult": "{{count}} items enriched, {{failed}} failed",
       "enrichError": "TMDB enrichment error",
-      "refreshPlex": "Refresh from Plex",
+      "refreshJellyfin": "Refresh from Jellyfin",
       "refreshing": "Refreshing...",
-      "refreshInProgress": "Refreshing cache from Plex",
-      "refreshHint": "Fetching all content from Plex libraries",
+      "refreshInProgress": "Refreshing cache from Jellyfin",
+      "refreshHint": "Fetching all content from Jellyfin libraries",
       "refreshedResult": "{{added}} added, {{updated}} updated",
-      "refreshError": "Error refreshing from Plex",
+      "refreshError": "Error refreshing from Jellyfin",
       "empty": "No cached content",
       "syncModalTitle": "TMDB Synchronization",
       "syncModalDescription": "Select libraries to enrich with TMDB metadata",
@@ -666,7 +666,7 @@
     "generateProfileBtn": "Generate AI",
     "generating": "Generating...",
     "generatingInProgress": "AI profile generation in progress...",
-    "generatingHint": "The AI is analyzing your request and generating a profile. This may take up to 10 minutes depending on the model and request complexity.",
+    "generatingHint": "The AI is analyzing your request and generating a profile. This may take up to 10 minutes depending on the model and request comjellyfinity.",
     "generationSuccess": "Profile generated successfully",
     "generationFailed": "Generation failed",
     "attempts": "{{count}} attempt(s)",
@@ -704,7 +704,7 @@
       "classicMovies": "Classic movies channel from the 80s and 90s, no horror films",
       "lateNight": "Late night programming with thrillers and suspense films, adult content allowed"
     },
-    "libraries": "Plex Libraries",
+    "libraries": "Jellyfin Libraries",
     "librariesHint": "Select libraries to inform the AI about available content",
     "selectAll": "Select all",
     "deselectAll": "Deselect all",

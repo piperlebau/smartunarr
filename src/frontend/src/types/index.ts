@@ -252,7 +252,7 @@ export interface ProgramItem {
   tmdb_rating?: number
   content_rating?: string
   poster_url?: string
-  plex_key?: string
+  jellyfin_id?: string
   block_name?: string
   score?: ItemScore
   // Replacement info (for optimized/improved iterations)
@@ -391,7 +391,7 @@ export interface ProgrammingRequest {
   profile_id: string
   iterations: number
   randomness: number
-  cache_mode: 'none' | 'plex_only' | 'tmdb_only' | 'cache_only' | 'full' | 'enrich_cache'
+  cache_mode: 'none' | 'jellyfin_only' | 'tmdb_only' | 'cache_only' | 'full' | 'enrich_cache'
   preview_only: boolean
   replace_forbidden?: boolean  // Replace forbidden content in best iteration with alternatives
   improve_best?: boolean  // Upgrade programs with better ones from other iterations
@@ -410,7 +410,7 @@ export interface AIProgrammingRequest {
   temperature?: number
   iterations: number
   randomness: number
-  cache_mode: 'none' | 'plex_only' | 'tmdb_only' | 'cache_only' | 'full' | 'enrich_cache'
+  cache_mode: 'none' | 'jellyfin_only' | 'tmdb_only' | 'cache_only' | 'full' | 'enrich_cache'
   preview_only: boolean
   save_profile?: boolean
   profile_name?: string
@@ -523,8 +523,8 @@ export interface OllamaModel {
   size: number
 }
 
-// Plex types
-export interface PlexLibrary {
+// Jellyfin types
+export interface JellyfinLibrary {
   id: string
   key: string
   title: string
@@ -578,7 +578,7 @@ export interface AIModelsResponse {
   recommended: {
     profile_generation: string
     quick_modification: string
-    complex_schedule: string
+    comjellyfin_schedule: string
   }
   all_recommendations: Record<string, string>
 }

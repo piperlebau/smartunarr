@@ -32,12 +32,12 @@
     "libraries": {
       "type": "array",
       "minItems": 1,
-      "description": "Plex libraries to source content from",
+      "description": "Jellyfin libraries to source content from",
       "items": {
         "type": "object",
         "required": ["id", "name"],
         "properties": {
-          "id": {"type": "string", "description": "Plex library section ID"},
+          "id": {"type": "string", "description": "Jellyfin library ID"},
           "name": {"type": "string", "description": "Library display name"},
           "type": {"type": "string", "enum": ["movie", "show", "mixed"], "description": "Library content type"},
           "weight": {"type": "number", "minimum": 0, "maximum": 100, "default": 50, "description": "Selection weight"},

@@ -186,13 +186,13 @@ sudo systemctl start smartunarr
 Configure services via the UI or API:
 
 ```bash
-# Configure Plex
-curl -X PUT http://localhost:8080/api/v1/services/plex \
+# Configure Jellyfin
+curl -X PUT http://localhost:8080/api/v1/services/jellyfin \
   -H "Content-Type: application/json" \
-  -d '{"url": "http://plex:32400", "token": "YOUR_TOKEN"}'
+  -d '{"url": "http://jellyfin:8096", "token": "YOUR_TOKEN"}'
 
 # Test connection
-curl -X POST http://localhost:8080/api/v1/services/plex/test
+curl -X POST http://localhost:8080/api/v1/services/jellyfin/test
 ```
 
 ### Ollama Setup
@@ -349,13 +349,13 @@ The application exposes basic metrics at `/api/v1/metrics`:
 
 ### Connection Issues
 
-**Plex connection fails:**
+**Jellyfin connection fails:**
 ```bash
-# Verify Plex is accessible
-curl -H "X-Plex-Token: YOUR_TOKEN" http://plex:32400/identity
+# Verify Jellyfin is accessible
+curl -H 'Authorization: MediaBrowser Token="YOUR_API_KEY"' http://jellyfin:8096/System/Info
 
 # Check network connectivity
-docker exec smartunarr-backend ping plex
+docker exec smartunarr-backend ping jellyfin
 ```
 
 **Tunarr connection fails:**

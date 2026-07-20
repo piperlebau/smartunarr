@@ -12,7 +12,7 @@ This guide covers Docker deployment of SmarTunarr. For Docker Hub overview, see 
 
 ```bash
 # Download docker-compose.yml
-curl -o docker-compose.yml https://raw.githubusercontent.com/sharkhunterr/smartunarr/master/docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/piperlebau/smartunarr/master/docker/docker-compose.yml
 
 # Start SmarTunarr
 docker compose up -d
@@ -33,7 +33,7 @@ docker run -d \
   -v smartunarr-data:/app/data \
   -e LOG_LEVEL=INFO \
   --restart unless-stopped \
-  sharkhunterr/smartunarr:latest
+  ghcr.io/piperlebau/smartunarr:latest
 ```
 
 ---
@@ -61,7 +61,7 @@ version: '3.8'
 
 services:
   smartunarr:
-    image: sharkhunterr/smartunarr:latest
+    image: ghcr.io/piperlebau/smartunarr:latest
     container_name: smartunarr
     hostname: smartunarr
     ports:
@@ -141,7 +141,7 @@ docker image prune -f
 ```yaml
 services:
   smartunarr:
-    image: sharkhunterr/smartunarr:v0.1.0  # Pin to specific version
+    image: ghcr.io/piperlebau/smartunarr:v0.1.0  # Pin to specific version
 ```
 
 ---
@@ -169,8 +169,8 @@ Test: `docker compose exec smartunarr curl -I http://YOUR_SERVICE`
 
 ## 📚 Resources
 
-- **🐳 Docker Hub**: https://hub.docker.com/r/sharkhunterr/smartunarr
-- **📘 GitHub**: https://github.com/sharkhunterr/smartunarr
+- **🐳 Docker Hub**: https://github.com/piperlebau/smartunarr/pkgs/container/smartunarr
+- **📘 GitHub**: https://github.com/piperlebau/smartunarr
 
 ---
 

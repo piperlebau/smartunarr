@@ -6,7 +6,7 @@ Complete guide to using SmarTunarr.
 
 ## Overview
 
-SmarTunarr is an intelligent TV channel programming system that helps you create optimized schedules for your Tunarr channels using content from your Plex library.
+SmarTunarr is an intelligent TV channel programming system that helps you create optimized schedules for your Tunarr channels using content from your Jellyfin library.
 
 ### Key Concepts
 
@@ -23,7 +23,7 @@ SmarTunarr is an intelligent TV channel programming system that helps you create
 
 The dashboard provides an overview of your SmarTunarr instance:
 
-- **Service Status**: Connection status for Plex, Tunarr, TMDB, Ollama
+- **Service Status**: Connection status for Jellyfin, Tunarr, TMDB, Ollama
 - **Recent Activity**: Latest programming executions
 - **Quick Actions**: Common tasks
 
@@ -129,7 +129,7 @@ Generate optimized schedules for your Tunarr channels.
 
 The programming engine:
 
-1. Fetches content from Plex
+1. Fetches content from Jellyfin
 2. Runs N iterations with different content combinations
 3. Scores each iteration using the profile criteria
 4. Returns the best-scoring schedule
@@ -327,7 +327,7 @@ Configure SmarTunarr and external services.
 
 ### Services
 
-#### Plex
+#### Jellyfin
 - **URL**: Server address
 - **Token**: Authentication token
 - **Test**: Verify connection
@@ -391,7 +391,7 @@ Configure SmarTunarr and external services.
 | Issue | Solution |
 |-------|----------|
 | Low scores | Relax criteria or add more content |
-| No content found | Check Plex library availability |
+| No content found | Check Jellyfin library availability |
 | Timing violations | Adjust block boundaries |
 | Slow performance | Reduce iterations |
 

@@ -66,15 +66,15 @@
     "cacheMode": "Modo de cache",
     "cacheModes": {
       "cacheOnly": "Cache",
-      "cachePlex": "Cache + Plex",
+      "cacheJellyfin": "Cache + Jellyfin",
       "enrich": "Enriquecer",
-      "plexOnly": "Plex"
+      "jellyfinOnly": "Jellyfin"
     },
     "cacheModeDescriptions": {
       "cacheOnly": "Usar solo cache existente",
-      "cachePlex": "Cache + nuevos contenidos Plex enriquecidos",
+      "cacheJellyfin": "Cache + nuevos contenidos Jellyfin enriquecidos",
       "enrich": "Re-enriquecer cache con TMDB",
-      "plexOnly": "Obtener de Plex sin cache"
+      "jellyfinOnly": "Obtener de Jellyfin sin cache"
     },
     "options": "Opciones",
     "previewOnly": "Solo vista previa",
@@ -444,10 +444,10 @@
     "testing": "Probando...",
     "saveFailed": "Error al guardar",
     "connectionFailed": "Conexion fallida",
-    "plex": {
-      "title": "Plex",
+    "jellyfin": {
+      "title": "Jellyfin",
       "url": "URL del servidor",
-      "token": "Token de autenticacion"
+      "token": "Clave API"
     },
     "tunarr": {
       "title": "Tunarr",
@@ -479,7 +479,7 @@
         "cacheOnly": "Cache",
         "cacheTmdb": "Cache + TMDB",
         "tmdbOnly": "TMDB",
-        "plexOnly": "Plex"
+        "jellyfinOnly": "Jellyfin"
       },
       "logRetention": "Retencion de logs",
       "logRetentionHelp": "Elimina automaticamente los logs mas antiguos que el periodo seleccionado",
@@ -523,12 +523,12 @@
       "syncHint": "Esta operación puede tardar varios minutos dependiendo del número de elementos",
       "enrichedResult": "{{count}} elementos enriquecidos, {{failed}} fallidos",
       "enrichError": "Error de enriquecimiento TMDB",
-      "refreshPlex": "Actualizar desde Plex",
+      "refreshJellyfin": "Actualizar desde Jellyfin",
       "refreshing": "Actualizando...",
-      "refreshInProgress": "Actualizando cache desde Plex",
-      "refreshHint": "Obteniendo todo el contenido de las bibliotecas Plex",
+      "refreshInProgress": "Actualizando cache desde Jellyfin",
+      "refreshHint": "Obteniendo todo el contenido de las bibliotecas Jellyfin",
       "refreshedResult": "{{added}} añadidos, {{updated}} actualizados",
-      "refreshError": "Error al actualizar desde Plex",
+      "refreshError": "Error al actualizar desde Jellyfin",
       "empty": "No hay contenido en cache",
       "syncModalTitle": "Sincronización TMDB",
       "syncModalDescription": "Seleccione las bibliotecas para enriquecer con metadatos de TMDB",

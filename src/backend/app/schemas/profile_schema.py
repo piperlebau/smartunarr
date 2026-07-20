@@ -76,7 +76,7 @@ class TimingRules(BaseModel):
 class LibraryConfig(BaseModel):
     """Library configuration."""
 
-    id: str = Field(..., description="Plex library section ID")
+    id: str = Field(..., description="Jellyfin library ID")
     name: str = Field(..., description="Library display name")
     type: str | None = Field(None, description="Library content type")
     weight: float = Field(50.0, ge=0, le=100, description="Selection weight")

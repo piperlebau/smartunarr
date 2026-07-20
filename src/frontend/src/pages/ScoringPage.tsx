@@ -523,7 +523,7 @@ export function ScoringPage() {
 
       {/* Service status banner */}
       <ServiceStatusBanner
-        requiredServices={['tunarr', 'plex']}
+        requiredServices={['tunarr', 'jellyfin']}
         optionalServices={['tmdb']}
       />
 

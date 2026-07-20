@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Loader2, Library, AlertCircle, GripVertical } from 'lucide-react'
 import clsx from 'clsx'
-import type { LibraryConfig, PlexLibrary } from '@/types'
-import { plexApi } from '@/services/api'
+import type { LibraryConfig, JellyfinLibrary } from '@/types'
+import { jellyfinApi } from '@/services/api'
 
 interface TabLibrariesProps {
   libraries: LibraryConfig[]
@@ -10,7 +10,7 @@ interface TabLibrariesProps {
 }
 
 export function TabLibraries({ libraries, onChange }: TabLibrariesProps) {
-  const [availableLibraries, setAvailableLibraries] = useState<PlexLibrary[]>([])
+  const [availableLibraries, setAvailableLibraries] = useState<JellyfinLibrary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -22,16 +22,16 @@ export function TabLibraries({ libraries, onChange }: TabLibrariesProps) {
     setLoading(true)
     setError(null)
     try {
-      const libs = await plexApi.getLibraries()
+      const libs = await jellyfinApi.getLibraries()
       setAvailableLibraries(libs)
     } catch (err) {
-      setError('Impossible de charger les bibliotheques Plex')
+      setError('Impossible de charger les bibliotheques Jellyfin')
     } finally {
       setLoading(false)
     }
   }
 
-  const toggleLibrary = (lib: PlexLibrary) => {
+  const toggleLibrary = (lib: JellyfinLibrary) => {
     const libKey = String(lib.key)
     const existing = libraries.find(l => String(l.id) === libKey)
     if (existing) {
@@ -143,7 +143,7 @@ export function TabLibraries({ libraries, onChange }: TabLibrariesProps) {
         </div>
         {availableLibraries.length === 0 && (
           <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            Aucune bibliotheque Plex disponible. Verifiez la configuration Plex.
+            Aucune bibliotheque Jellyfin disponible. Verifiez la configuration Jellyfin.
           </p>
         )}
       </div>

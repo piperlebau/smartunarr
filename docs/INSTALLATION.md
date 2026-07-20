@@ -10,7 +10,7 @@ Complete installation guide for SmarTunarr.
 
 | Service | Description | Required |
 |---------|-------------|----------|
-| **Plex Media Server** | Source of media content | Yes |
+| **Jellyfin Media Server** | Source of media content | Yes |
 | **Tunarr** | Channel management target | Yes |
 | **TMDB API Key** | Metadata enrichment | Optional |
 | **Ollama** | AI profile generation | Optional |
@@ -34,10 +34,10 @@ The simplest way to run SmarTunarr.
 
 ```bash
 # Pull the image
-docker pull sharkhunterr/smartunarr:latest
+docker pull ghcr.io/piperlebau/smartunarr:latest
 
 # Download docker-compose.yml
-curl -o docker-compose.yml https://raw.githubusercontent.com/sharkhunterr/smartunarr/master/docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/piperlebau/smartunarr/master/docker/docker-compose.yml
 
 # Start SmarTunarr
 docker compose up -d
@@ -57,7 +57,7 @@ docker run -d \
   -v smartunarr-data:/app/data \
   -e LOG_LEVEL=INFO \
   --restart unless-stopped \
-  sharkhunterr/smartunarr:latest
+  ghcr.io/piperlebau/smartunarr:latest
 ```
 
 ### Option 3: Local Development
@@ -134,18 +134,18 @@ Open http://localhost:3000 in your browser.
 
 Navigate to **Settings** and configure your external services:
 
-#### Plex Configuration
+#### Jellyfin Configuration
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| URL | Plex server address | `http://192.168.1.100:32400` |
-| Token | X-Plex-Token | `xxxxxxxxxxxxxxxxxxxx` |
+| URL | Jellyfin server address | `http://192.168.1.100:8096` |
+| API Key | Jellyfin API key | `xxxxxxxxxxxxxxxxxxxx` |
 
-**How to get your Plex token:**
-1. Sign in to Plex Web App
-2. Open any media item
-3. Click "Get Info" → "View XML"
-4. Find `X-Plex-Token=` in the URL
+**How to get your Jellyfin API key:**
+1. Sign in to Jellyfin as an administrator
+2. Go to Dashboard → API Keys
+3. Click "+" to create a new API key
+4. Name it (e.g. "SmarTunarr") and copy the key
 
 #### Tunarr Configuration
 
@@ -202,14 +202,14 @@ When running in Docker, use appropriate hostnames:
 | **Linux** | Host IP (e.g., `192.168.1.100`) |
 | **Mac/Windows** | `host.docker.internal` |
 
-### Example: Plex on Same Machine
+### Example: Jellyfin on Same Machine
 
 ```yaml
 # docker-compose.yml
 environment:
-  - PLEX_URL=http://host.docker.internal:32400  # Mac/Windows
+  - JELLYFIN_URL=http://host.docker.internal:8096  # Mac/Windows
   # or
-  - PLEX_URL=http://192.168.1.100:32400  # Linux
+  - JELLYFIN_URL=http://192.168.1.100:8096  # Linux
 ```
 
 ### Firewall Rules
@@ -220,7 +220,7 @@ Ensure these ports are accessible:
 |---------|------|-----------|
 | SmarTunarr Web UI | 3000 | Inbound |
 | SmarTunarr API | 4273 | Inbound |
-| Plex | 32400 | Outbound |
+| Jellyfin | 8096 | Outbound |
 | Tunarr | 8000 | Outbound |
 | TMDB API | 443 | Outbound |
 | Ollama | 11434 | Outbound |
@@ -316,7 +316,7 @@ docker compose down
 docker volume rm smartunarr-data
 
 # Remove image
-docker rmi sharkhunterr/smartunarr
+docker rmi ghcr.io/piperlebau/smartunarr
 ```
 
 ### Local Installation

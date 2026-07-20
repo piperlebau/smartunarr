@@ -29,9 +29,9 @@ class Settings(BaseSettings):
         description="SQLite database URL with async driver",
     )
 
-    # Plex
-    plex_url: str = Field(default="", description="Plex server URL")
-    plex_token: str = Field(default="", description="Plex authentication token")
+    # Jellyfin
+    jellyfin_url: str = Field(default="", description="Jellyfin server URL")
+    jellyfin_api_key: str = Field(default="", description="Jellyfin API key")
 
     # TMDB
     tmdb_api_key: str = Field(default="", description="TMDB API key")

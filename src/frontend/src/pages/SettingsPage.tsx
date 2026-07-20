@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Server, CheckCircle, XCircle, Loader2, Settings, Trash2, Database, Info, Eye, EyeOff, RefreshCw, Film, Tv } from 'lucide-react'
-import { servicesApi, cacheApi, plexApi, logsApi, type CacheStats } from '@/services/api'
-import type { PlexLibrary } from '@/types'
+import { servicesApi, cacheApi, jellyfinApi, logsApi, type CacheStats } from '@/services/api'
+import type { JellyfinLibrary } from '@/types'
 import { useThemeStore } from '@/stores/useThemeStore'
 import type { ServiceConfig } from '@/types'
 import clsx from 'clsx'
@@ -20,11 +20,11 @@ interface ServiceCardProps {
 
 const serviceConfigs: ServiceCardProps[] = [
   {
-    type: 'plex',
-    title: 'settings.plex.title',
+    type: 'jellyfin',
+    title: 'settings.jellyfin.title',
     fields: [
-      { key: 'url', label: 'settings.plex.url', type: 'text', placeholder: 'http://localhost:32400' },
-      { key: 'token', label: 'settings.plex.token', type: 'password' },
+      { key: 'url', label: 'settings.jellyfin.url', type: 'text', placeholder: 'http://localhost:8096' },
+      { key: 'token', label: 'settings.jellyfin.token', type: 'password' },
     ],
   },
   {
@@ -54,7 +54,7 @@ const CACHE_MODES = [
   { value: 'cache_only', label: 'settings.defaults.cacheModes.cacheOnly' },
   { value: 'cache_tmdb', label: 'settings.defaults.cacheModes.cacheTmdb' },
   { value: 'tmdb_only', label: 'settings.defaults.cacheModes.tmdbOnly' },
-  { value: 'plex_only', label: 'settings.defaults.cacheModes.plexOnly' },
+  { value: 'jellyfin_only', label: 'settings.defaults.cacheModes.jellyfinOnly' },
 ]
 
 function ServiceCard({ type, title, fields }: ServiceCardProps) {
@@ -398,7 +398,7 @@ function CacheSection() {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<CacheStats | null>(null)
-  const [libraries, setLibraries] = useState<PlexLibrary[]>([])
+  const [libraries, setLibraries] = useState<JellyfinLibrary[]>([])
   const [clearingAll, setClearingAll] = useState(false)
   const [clearingLibrary, setClearingLibrary] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
@@ -434,12 +434,12 @@ function CacheSection() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [cacheStats, plexLibs] = await Promise.all([
+      const [cacheStats, jellyfinLibs] = await Promise.all([
         cacheApi.getStats(),
-        plexApi.getLibraries().catch(() => [] as PlexLibrary[])
+        jellyfinApi.getLibraries().catch(() => [] as JellyfinLibrary[])
       ])
       setStats(cacheStats)
-      setLibraries(plexLibs)
+      setLibraries(jellyfinLibs)
     } catch (err) {
       setError(t('settings.cache.loadError'))
     } finally {
@@ -538,11 +538,11 @@ function CacheSection() {
     }
   }
 
-  const handleRefreshFromPlex = async () => {
+  const handleRefreshFromJellyfin = async () => {
     setRefreshing(true)
     setError(null)
     try {
-      const result = await cacheApi.refreshFromPlex()
+      const result = await cacheApi.refreshFromJellyfin()
       setSuccess(t('settings.cache.refreshedResult', { added: result.added, updated: result.updated }))
       setTimeout(() => setSuccess(null), 5000)
       await loadData()
@@ -756,7 +756,7 @@ function CacheSection() {
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
-          onClick={handleRefreshFromPlex}
+          onClick={handleRefreshFromJellyfin}
           disabled={refreshing || syncing}
           className="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm sm:text-base"
         >
@@ -765,7 +765,7 @@ function CacheSection() {
           ) : (
             <Server className="w-4 h-4" />
           )}
-          {refreshing ? t('settings.cache.refreshing') : t('settings.cache.refreshPlex')}
+          {refreshing ? t('settings.cache.refreshing') : t('settings.cache.refreshJellyfin')}
         </button>
         <button
           onClick={openSyncModal}

@@ -16,7 +16,7 @@ Guide for contributing to SmarTunarr development.
 ### Clone Repository
 
 ```bash
-git clone https://github.com/sharkhunterr/smartunarr.git
+git clone https://github.com/piperlebau/smartunarr.git
 cd smartunarr
 ```
 
@@ -122,7 +122,7 @@ app/
 │       └── ai.py
 │
 ├── adapters/             # External service integrations
-│   ├── plex.py
+│   ├── jellyfin.py
 │   ├── tunarr.py
 │   ├── tmdb.py
 │   └── ollama.py
@@ -503,7 +503,7 @@ npm run lint -- --fix
 │  │              Data Layer                    │              │
 │  │  ┌─────────┐  ┌─────────────────────────┐│              │
 │  │  │ SQLite  │  │       Adapters          ││              │
-│  │  │   DB    │  │ Plex│Tunarr│TMDB│Ollama ││              │
+│  │  │   DB    │  │ Jellyfin│Tunarr│TMDB│Ollama ││              │
 │  │  └─────────┘  └─────────────────────────┘│              │
 │  └───────────────────────────────────────────┘              │
 └─────────────────────────────────────────────────────────────┘
@@ -582,7 +582,7 @@ docker buildx create --name multiarch --use
 # Build and push
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  -t sharkhunterr/smartunarr:dev \
+  -t ghcr.io/piperlebau/smartunarr:dev \
   --push \
   -f docker/Dockerfile .
 ```

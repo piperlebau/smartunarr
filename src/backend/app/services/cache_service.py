@@ -344,9 +344,9 @@ class CacheKeys:
         return f"profile:{profile_id}"
 
     @staticmethod
-    def plex_library(library_id: str) -> str:
-        """Cache key for Plex library."""
-        return f"plex_library:{library_id}"
+    def jellyfin_library(library_id: str) -> str:
+        """Cache key for Jellyfin library."""
+        return f"jellyfin_library:{library_id}"
 
     @staticmethod
     def tmdb_content(tmdb_id: int) -> str:
@@ -369,7 +369,7 @@ class CacheTTL:
     EXTENDED = 86400  # 24 hours - for static data
 
     # Specific TTLs
-    PLEX_LIBRARY = LONG  # Libraries don't change often
+    JELLYFIN_LIBRARY = LONG  # Libraries don't change often
     TMDB_METADATA = EXTENDED  # TMDB data is static
     TUNARR_CHANNELS = MEDIUM  # Channels might be added/removed
     PROFILE = MEDIUM  # Profiles might be edited

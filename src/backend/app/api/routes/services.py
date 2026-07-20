@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_session
 from app.models.content import Content, ContentMeta
-from app.services.plex_service import PlexService
+from app.services.jellyfin_service import JellyfinService
 from app.services.service_config_service import ServiceConfigService
 from app.services.tmdb_service import TMDBService
 from app.services.tunarr_service import TunarrService
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/services", tags=["services"])
 
-ServiceType = Literal["plex", "tunarr", "tmdb", "ollama"]
+ServiceType = Literal["jellyfin", "tunarr", "tmdb", "ollama"]
 
 
 class ServiceConfigUpdate(BaseModel):
@@ -59,7 +59,7 @@ async def list_services(
     configs = await service.get_all_services()
 
     # Include all service types, even unconfigured ones
-    all_services = {"plex", "tunarr", "tmdb", "ollama"}
+    all_services = {"jellyfin", "tunarr", "tmdb", "ollama"}
     configured_types = {c.type for c in configs}
 
     result = []
@@ -177,12 +177,12 @@ async def test_service(
     try:
         creds = config_service.get_decrypted_credentials(config)
 
-        if service_type == "plex":
+        if service_type == "jellyfin":
             if not config.url or not creds.get("token"):
-                return {"success": False, "message": "Plex URL and token required"}
+                return {"success": False, "message": "Jellyfin URL and API key required"}
 
-            plex = PlexService(config.url, creds["token"])
-            success, message = plex.test_connection()
+            jellyfin = JellyfinService(config.url, creds["token"])
+            success, message = jellyfin.test_connection()
             return {"success": success, "message": message}
 
         elif service_type == "tunarr":
@@ -235,49 +235,49 @@ async def test_service(
         return {"success": False, "message": f"Test failed: {str(e)}"}
 
 
-# Plex-specific endpoints
-@router.get("/plex/libraries")
-async def get_plex_libraries(
+# Jellyfin-specific endpoints
+@router.get("/jellyfin/libraries")
+async def get_jellyfin_libraries(
     session: AsyncSession = Depends(get_session),
 ) -> list[dict[str, Any]]:
-    """Get Plex libraries."""
+    """Get Jellyfin libraries."""
     config_service = ServiceConfigService(session)
-    config = await config_service.get_service("plex")
+    config = await config_service.get_service("jellyfin")
 
     if not config or not config.url or not config.token:
-        raise HTTPException(status_code=400, detail="Plex not configured")
+        raise HTTPException(status_code=400, detail="Jellyfin not configured")
 
     creds = config_service.get_decrypted_credentials(config)
-    plex = PlexService(config.url, creds["token"])
+    jellyfin = JellyfinService(config.url, creds["token"])
 
     try:
-        return plex.get_libraries()
+        return jellyfin.get_libraries()
     except Exception as e:
-        logger.error(f"Failed to get Plex libraries: {e}")
+        logger.error(f"Failed to get Jellyfin libraries: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get libraries: {str(e)}")
 
 
-@router.get("/plex/libraries/{library_id}/content")
-async def get_plex_library_content(
+@router.get("/jellyfin/libraries/{library_id}/content")
+async def get_jellyfin_library_content(
     library_id: str,
     content_type: str | None = Query(None, description="Filter by content type"),
     limit: int = Query(100, ge=1, le=1000),
     session: AsyncSession = Depends(get_session),
 ) -> list[dict[str, Any]]:
-    """Get content from a Plex library."""
+    """Get content from a Jellyfin library."""
     config_service = ServiceConfigService(session)
-    config = await config_service.get_service("plex")
+    config = await config_service.get_service("jellyfin")
 
     if not config or not config.url or not config.token:
-        raise HTTPException(status_code=400, detail="Plex not configured")
+        raise HTTPException(status_code=400, detail="Jellyfin not configured")
 
     creds = config_service.get_decrypted_credentials(config)
-    plex = PlexService(config.url, creds["token"])
+    jellyfin = JellyfinService(config.url, creds["token"])
 
     try:
-        return plex.get_library_content(library_id, content_type, limit)
+        return jellyfin.get_library_content(library_id, content_type, limit)
     except Exception as e:
-        logger.error(f"Failed to get Plex content: {e}")
+        logger.error(f"Failed to get Jellyfin content: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get content: {str(e)}")
 
 
@@ -371,7 +371,7 @@ async def clear_content_cache(
     """
     Clear all cached content and metadata.
 
-    This forces a fresh fetch from Plex and TMDB on next programming generation.
+    This forces a fresh fetch from Jellyfin and TMDB on next programming generation.
     Use this to re-enrich content with updated TMDB data (budget, revenue, etc.).
     """
     # Delete all ContentMeta first (due to foreign key)
@@ -489,7 +489,7 @@ async def clear_library_cache(
     """
     Clear cached content for a specific library.
 
-    This forces a fresh fetch from Plex for this library on next use.
+    This forces a fresh fetch from Jellyfin for this library on next use.
     """
     # First get the content IDs for this library
     content_stmt = select(Content.id).where(Content.library_id == library_id)
@@ -584,7 +584,7 @@ async def force_tmdb_enrichment(
     for content in unenriched:
         try:
             result = await enrichment_service.enrich_with_tmdb(
-                content.plex_key,
+                content.jellyfin_id,
                 content.title,
                 content.type,
                 content.year,
@@ -612,26 +612,26 @@ async def force_tmdb_enrichment(
 
 
 @router.post("/cache/refresh")
-async def refresh_cache_from_plex(
+async def refresh_cache_from_jellyfin(
     library_id: str | None = Query(None, description="Optional: refresh only this library"),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
     """
-    Refresh the cache by fetching all content from Plex libraries.
+    Refresh the cache by fetching all content from Jellyfin libraries.
 
     This will fetch all content (no limit) and update/add to the cache.
     """
     from app.services.content_enrichment_service import ContentEnrichmentService
 
-    # Get Plex config
+    # Get Jellyfin config
     config_service = ServiceConfigService(session)
-    plex_config = await config_service.get_service("plex")
+    jellyfin_config = await config_service.get_service("jellyfin")
 
-    if not plex_config or not plex_config.url or not plex_config.token:
-        raise HTTPException(status_code=400, detail="Plex not configured")
+    if not jellyfin_config or not jellyfin_config.url or not jellyfin_config.token:
+        raise HTTPException(status_code=400, detail="Jellyfin not configured")
 
-    creds = config_service.get_decrypted_credentials(plex_config)
-    plex = PlexService(plex_config.url, creds["token"])
+    creds = config_service.get_decrypted_credentials(jellyfin_config)
+    jellyfin = JellyfinService(jellyfin_config.url, creds["token"])
 
     enrichment_service = ContentEnrichmentService(session, None)
 
@@ -639,24 +639,24 @@ async def refresh_cache_from_plex(
     if library_id:
         library_ids = [library_id]
     else:
-        libraries = plex.get_libraries()
+        libraries = jellyfin.get_libraries()
         library_ids = [lib["id"] for lib in libraries if lib.get("type") in ["movie", "show"]]
 
     total_added = 0
     total_updated = 0
 
     for lib_id in library_ids:
-        # Fetch ALL content from Plex (no limit)
-        items = plex.get_library_content(lib_id)  # No limit parameter
+        # Fetch ALL content from Jellyfin (no limit)
+        items = jellyfin.get_library_content(lib_id)  # No limit parameter
         logger.info(f"Fetched {len(items)} items from library {lib_id}")
 
         for item in items:
-            plex_key = item.get("plex_key") or item.get("id")
-            if not plex_key:
+            jellyfin_id = item.get("jellyfin_id") or item.get("id")
+            if not jellyfin_id:
                 continue
 
             # Check if already in cache
-            existing = await enrichment_service.get_cached_content(plex_key)
+            existing = await enrichment_service.get_cached_content(jellyfin_id)
 
             content_data = {
                 "title": item.get("title", ""),
@@ -668,7 +668,7 @@ async def refresh_cache_from_plex(
 
             # Save or update in cache
             saved = await enrichment_service.save_content_with_meta(
-                plex_key,
+                jellyfin_id,
                 content_data,
                 {},  # Empty meta - will be enriched separately
             )

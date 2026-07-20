@@ -34,15 +34,15 @@ class ContentEnrichmentService:
 
     async def get_or_cache_content(
         self,
-        plex_key: str,
-        plex_data: dict[str, Any],
+        jellyfin_id: str,
+        jellyfin_data: dict[str, Any],
     ) -> tuple[dict[str, Any], dict[str, Any] | None]:
         """
-        Get content from cache or create from Plex data.
+        Get content from cache or create from Jellyfin data.
 
         Args:
-            plex_key: Plex content key
-            plex_data: Data from Plex adapter
+            jellyfin_id: Jellyfin content key
+            jellyfin_data: Data from Jellyfin adapter
 
         Returns:
             (content_dict, meta_dict) tuple
@@ -50,7 +50,7 @@ class ContentEnrichmentService:
         # Check if content exists in cache
         # Use selectinload to eagerly load the meta relationship
         stmt = (
-            select(Content).options(selectinload(Content.meta)).where(Content.plex_key == plex_key)
+            select(Content).options(selectinload(Content.meta)).where(Content.jellyfin_id == jellyfin_id)
         )
         result = await self.session.execute(stmt)
         content = result.scalar_one_or_none()
@@ -71,32 +71,32 @@ class ContentEnrichmentService:
                     "collections": content.meta.collections or [],
                     "content_rating": content.meta.age_rating,
                 }
-            return self._content_to_dict(content, plex_data), meta_dict
+            return self._content_to_dict(content, jellyfin_data), meta_dict
 
-        # Create new content from Plex data
+        # Create new content from Jellyfin data
         content = Content(
-            plex_key=plex_key,
-            title=plex_data.get("title", ""),
-            type=plex_data.get("type", "movie"),
-            duration_ms=plex_data.get("duration_ms", 0),
-            year=plex_data.get("year"),
-            library_id=plex_data.get("library_id", ""),
+            jellyfin_id=jellyfin_id,
+            title=jellyfin_data.get("title", ""),
+            type=jellyfin_data.get("type", "movie"),
+            duration_ms=jellyfin_data.get("duration_ms", 0),
+            year=jellyfin_data.get("year"),
+            library_id=jellyfin_data.get("library_id", ""),
         )
         self.session.add(content)
 
-        # Create metadata from Plex data if available
-        # Priority: tmdb_rating (from TMDB enrichment) > rating (from Plex)
+        # Create metadata from Jellyfin data if available
+        # Priority: tmdb_rating (from TMDB enrichment) > rating (from Jellyfin)
         meta = ContentMeta(
             content=content,
-            genres=plex_data.get("genres", []),
-            age_rating=plex_data.get("content_rating"),
-            tmdb_rating=plex_data.get("tmdb_rating") or plex_data.get("rating"),
-            vote_count=plex_data.get("vote_count", 0),
-            budget=plex_data.get("budget"),
-            revenue=plex_data.get("revenue"),
-            keywords=plex_data.get("keywords", []),
-            studios=plex_data.get("studios", []),
-            collections=plex_data.get("collections", []),
+            genres=jellyfin_data.get("genres", []),
+            age_rating=jellyfin_data.get("content_rating"),
+            tmdb_rating=jellyfin_data.get("tmdb_rating") or jellyfin_data.get("rating"),
+            vote_count=jellyfin_data.get("vote_count", 0),
+            budget=jellyfin_data.get("budget"),
+            revenue=jellyfin_data.get("revenue"),
+            keywords=jellyfin_data.get("keywords", []),
+            studios=jellyfin_data.get("studios", []),
+            collections=jellyfin_data.get("collections", []),
         )
         self.session.add(meta)
 
@@ -114,7 +114,7 @@ class ContentEnrichmentService:
             "collections": meta.collections or [],
         }
 
-        return self._content_to_dict(content, plex_data), meta_dict
+        return self._content_to_dict(content, jellyfin_data), meta_dict
 
     async def enrich_with_tmdb(
         self,
@@ -144,7 +144,7 @@ class ContentEnrichmentService:
         stmt = (
             select(Content)
             .options(selectinload(Content.meta))
-            .where(Content.plex_key == content_id)
+            .where(Content.jellyfin_id == content_id)
         )
         result = await self.session.execute(stmt)
         content = result.scalar_one_or_none()
@@ -188,14 +188,14 @@ class ContentEnrichmentService:
 
     async def update_content_meta(
         self,
-        plex_key: str,
+        jellyfin_id: str,
         meta_data: dict[str, Any],
     ) -> bool:
         """
         Update content metadata in the database.
 
         Args:
-            plex_key: Plex content key
+            jellyfin_id: Jellyfin content key
             meta_data: New metadata values to update
 
         Returns:
@@ -203,7 +203,7 @@ class ContentEnrichmentService:
         """
         # Get existing content with eager loading of meta
         stmt = (
-            select(Content).options(selectinload(Content.meta)).where(Content.plex_key == plex_key)
+            select(Content).options(selectinload(Content.meta)).where(Content.jellyfin_id == jellyfin_id)
         )
         result = await self.session.execute(stmt)
         content = result.scalar_one_or_none()
@@ -238,16 +238,16 @@ class ContentEnrichmentService:
         await self.session.flush()
         return True
 
-    async def batch_enrich_from_plex(
+    async def batch_enrich_from_jellyfin(
         self,
-        plex_items: list[dict[str, Any]],
+        jellyfin_items: list[dict[str, Any]],
         enrich_with_tmdb: bool = False,
     ) -> list[tuple[dict[str, Any], dict[str, Any] | None]]:
         """
-        Process a batch of Plex items, caching and optionally enriching.
+        Process a batch of Jellyfin items, caching and optionally enriching.
 
         Args:
-            plex_items: List of items from Plex adapter
+            jellyfin_items: List of items from Jellyfin adapter
             enrich_with_tmdb: Whether to enrich with TMDB
 
         Returns:
@@ -256,12 +256,12 @@ class ContentEnrichmentService:
         results = []
         items_to_enrich = []
 
-        for item in plex_items:
-            plex_key = item.get("plex_key", "")
-            if not plex_key:
+        for item in jellyfin_items:
+            jellyfin_id = item.get("jellyfin_id", "")
+            if not jellyfin_id:
                 continue
 
-            content_dict, meta_dict = await self.get_or_cache_content(plex_key, item)
+            content_dict, meta_dict = await self.get_or_cache_content(jellyfin_id, item)
             results.append((content_dict, meta_dict))
 
             # Track items that need TMDB enrichment
@@ -327,19 +327,19 @@ class ContentEnrichmentService:
 
     async def get_cached_content(
         self,
-        plex_key: str,
+        jellyfin_id: str,
     ) -> tuple[dict[str, Any], dict[str, Any] | None] | None:
         """
-        Get a single cached content by plex_key.
+        Get a single cached content by jellyfin_id.
 
         Args:
-            plex_key: The Plex key to look up
+            jellyfin_id: The Jellyfin key to look up
 
         Returns:
             Tuple of (content, meta) or None if not found
         """
         stmt = (
-            select(Content).options(selectinload(Content.meta)).where(Content.plex_key == plex_key)
+            select(Content).options(selectinload(Content.meta)).where(Content.jellyfin_id == jellyfin_id)
         )
         result = await self.session.execute(stmt)
         content = result.scalar_one_or_none()
@@ -353,7 +353,7 @@ class ContentEnrichmentService:
 
     async def save_content_with_meta(
         self,
-        plex_key: str,
+        jellyfin_id: str,
         content_data: dict[str, Any],
         meta_data: dict[str, Any],
     ) -> bool:
@@ -363,14 +363,14 @@ class ContentEnrichmentService:
         This is used to cache TMDB enrichment results for future "cache only" requests.
 
         Args:
-            plex_key: Unique content key (from Tunarr's externalKey/plexKey)
+            jellyfin_id: Unique content key (from Tunarr's externalKey/jellyfinId)
             content_data: Content info (title, type, duration_ms, year)
             meta_data: Metadata from TMDB (genres, tmdb_rating, age_rating, etc.)
 
         Returns:
             True if saved successfully, False otherwise
         """
-        if not plex_key:
+        if not jellyfin_id:
             return False
 
         try:
@@ -378,7 +378,7 @@ class ContentEnrichmentService:
             stmt = (
                 select(Content)
                 .options(selectinload(Content.meta))
-                .where(Content.plex_key == plex_key)
+                .where(Content.jellyfin_id == jellyfin_id)
             )
             result = await self.session.execute(stmt)
             content = result.scalar_one_or_none()
@@ -414,7 +414,7 @@ class ContentEnrichmentService:
             else:
                 # Create new content
                 content = Content(
-                    plex_key=plex_key,
+                    jellyfin_id=jellyfin_id,
                     title=content_data.get("title", ""),
                     type=content_data.get("type", "movie"),
                     duration_ms=content_data.get("duration_ms", 0),
@@ -443,25 +443,25 @@ class ContentEnrichmentService:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to save content {plex_key}: {e}")
+            logger.error(f"Failed to save content {jellyfin_id}: {e}")
             return False
 
     def _content_to_dict(
         self,
         content: Content,
-        plex_data: dict[str, Any] | None = None,
+        jellyfin_data: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Convert Content model to dict."""
         return {
-            "id": content.plex_key,
-            "plex_key": content.plex_key,
+            "id": content.jellyfin_id,
+            "jellyfin_id": content.jellyfin_id,
             "title": content.title,
             "type": content.type,
             "duration_ms": content.duration_ms,
             "year": content.year,
             "library_id": content.library_id,
-            # Include Plex-specific fields if provided
-            "rating_key": plex_data.get("rating_key") if plex_data else None,
+            # Include Jellyfin-specific fields if provided
+            "rating_key": jellyfin_data.get("rating_key") if jellyfin_data else None,
         }
 
     def _meta_to_dict(self, meta: ContentMeta) -> dict[str, Any]:

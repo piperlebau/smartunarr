@@ -15,8 +15,8 @@ import {
   Library,
   Check
 } from 'lucide-react'
-import { aiApi, ollamaApi, profilesApi, plexApi } from '@/services/api'
-import type { AIGenerateProfileResponse, AIModelInfo, Profile, OllamaModel, PlexLibrary, AILibraryInfo } from '@/types'
+import { aiApi, ollamaApi, profilesApi, jellyfinApi } from '@/services/api'
+import type { AIGenerateProfileResponse, AIModelInfo, Profile, OllamaModel, JellyfinLibrary, AILibraryInfo } from '@/types'
 
 interface AIGenerateModalProps {
   onClose: () => void
@@ -46,7 +46,7 @@ export function AIGenerateModal({ onClose, onProfileGenerated }: AIGenerateModal
   const [recommendedModel, setRecommendedModel] = useState<string>('')
 
   // Libraries state
-  const [libraries, setLibraries] = useState<PlexLibrary[]>([])
+  const [libraries, setLibraries] = useState<JellyfinLibrary[]>([])
   const [selectedLibraries, setSelectedLibraries] = useState<Set<string>>(new Set())
   const [loadingLibraries, setLoadingLibraries] = useState(true)
 
@@ -63,10 +63,10 @@ export function AIGenerateModal({ onClose, onProfileGenerated }: AIGenerateModal
 
   const loadLibraries = async () => {
     try {
-      const plexLibraries = await plexApi.getLibraries()
-      setLibraries(plexLibraries)
+      const jellyfinLibraries = await jellyfinApi.getLibraries()
+      setLibraries(jellyfinLibraries)
       // Select all libraries by default
-      setSelectedLibraries(new Set(plexLibraries.map(lib => lib.id)))
+      setSelectedLibraries(new Set(jellyfinLibraries.map(lib => lib.id)))
     } catch (err) {
       console.error('Failed to load libraries:', err)
       // Not critical, just won't show library selection

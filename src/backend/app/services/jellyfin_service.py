@@ -1,29 +1,29 @@
-"""PlexService with library listing and connection testing."""
+"""JellyfinService with library listing and connection testing."""
 
 import logging
 from typing import Any
 
-from app.adapters.plex_adapter import PlexAdapter
+from app.adapters.jellyfin_adapter import JellyfinAdapter
 
 logger = logging.getLogger(__name__)
 
 
-class PlexService:
-    """Service for Plex interactions."""
+class JellyfinService:
+    """Service for Jellyfin interactions."""
 
-    def __init__(self, url: str, token: str) -> None:
+    def __init__(self, url: str, api_key: str) -> None:
         """
-        Initialize Plex service.
+        Initialize Jellyfin service.
 
         Args:
-            url: Plex server URL
-            token: Plex authentication token
+            url: Jellyfin server URL
+            api_key: Jellyfin API key
         """
-        self.adapter = PlexAdapter(url, token)
+        self.adapter = JellyfinAdapter(url, api_key)
 
     def test_connection(self) -> tuple[bool, str]:
         """
-        Test connection to Plex server.
+        Test connection to Jellyfin server.
 
         Returns:
             (success, message) tuple
@@ -32,7 +32,7 @@ class PlexService:
 
     def get_libraries(self) -> list[dict[str, Any]]:
         """
-        Get all libraries from Plex.
+        Get all libraries from Jellyfin.
 
         Returns:
             List of library dictionaries
@@ -49,7 +49,7 @@ class PlexService:
         Get content from a specific library.
 
         Args:
-            library_id: Library section ID
+            library_id: Library ID
             content_type: Optional content type filter
             limit: Maximum items to return
 
@@ -58,17 +58,17 @@ class PlexService:
         """
         return self.adapter.get_library_content(library_id, content_type, limit)
 
-    def get_content_metadata(self, plex_key: str) -> dict[str, Any] | None:
+    def get_content_metadata(self, jellyfin_id: str) -> dict[str, Any] | None:
         """
         Get detailed metadata for a content item.
 
         Args:
-            plex_key: Plex content key
+            jellyfin_id: Jellyfin item ID
 
         Returns:
             Metadata dictionary or None
         """
-        return self.adapter.get_content_metadata(plex_key)
+        return self.adapter.get_content_metadata(jellyfin_id)
 
     def search(
         self,
@@ -91,7 +91,7 @@ class PlexService:
 
     def get_server_info(self) -> dict[str, Any] | None:
         """
-        Get Plex server information.
+        Get Jellyfin server information.
 
         Returns:
             Server info dictionary or None on error

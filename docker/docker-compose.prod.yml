@@ -3,5 +3,5 @@
 
 services:
   smartunarr:
-    image: sharkhunterr/smartunarr:latest
+    image: ghcr.io/piperlebau/smartunarr:latest
     build: !reset null

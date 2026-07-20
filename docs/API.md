@@ -541,10 +541,10 @@ List service configurations.
 ```json
 {
   "services": {
-    "plex": {
+    "jellyfin": {
       "configured": true,
       "connected": true,
-      "url": "http://192.168.1.100:32400"
+      "url": "http://192.168.1.100:8096"
     },
     "tunarr": {
       "configured": true,
@@ -567,10 +567,10 @@ List service configurations.
 
 Update service configuration.
 
-**Request Body (Plex):**
+**Request Body (Jellyfin):**
 ```json
 {
-  "url": "http://192.168.1.100:32400",
+  "url": "http://192.168.1.100:8096",
   "token": "xxxxxxxxxxxx"
 }
 ```
@@ -615,9 +615,9 @@ Test service connection.
 }
 ```
 
-### GET /services/plex/libraries
+### GET /services/jellyfin/libraries
 
-List Plex libraries.
+List Jellyfin libraries.
 
 **Response:**
 ```json

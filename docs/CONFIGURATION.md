@@ -33,8 +33,8 @@ Complete configuration reference for SmarTunarr.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PLEX_URL` | - | Plex server URL |
-| `PLEX_TOKEN` | - | Plex authentication token |
+| `JELLYFIN_URL` | - | Jellyfin server URL |
+| `JELLYFIN_API_KEY` | - | Jellyfin authentication token |
 | `TUNARR_URL` | - | Tunarr server URL |
 | `TUNARR_USERNAME` | - | Tunarr username (optional) |
 | `TUNARR_PASSWORD` | - | Tunarr password (optional) |
@@ -60,9 +60,9 @@ LOG_LEVEL=INFO
 # Database
 DATABASE_URL=sqlite+aiosqlite:///./smartunarr.db
 
-# Plex (Required)
-PLEX_URL=http://localhost:32400
-PLEX_TOKEN=your_plex_token_here
+# Jellyfin (Required)
+JELLYFIN_URL=http://localhost:8096
+JELLYFIN_API_KEY=your_jellyfin_api_key_here
 
 # Tunarr (Required)
 TUNARR_URL=http://localhost:8000
@@ -92,7 +92,7 @@ version: '3.8'
 
 services:
   smartunarr:
-    image: sharkhunterr/smartunarr:latest
+    image: ghcr.io/piperlebau/smartunarr:latest
     container_name: smartunarr
     ports:
       - "3000:3000"   # Web UI
@@ -107,8 +107,8 @@ services:
       - DATABASE_URL=sqlite+aiosqlite:///data/smartunarr.db
 
       # External Services (configure via UI recommended)
-      # - PLEX_URL=http://plex:32400
-      # - PLEX_TOKEN=xxxx
+      # - JELLYFIN_URL=http://jellyfin:8096
+      # - JELLYFIN_API_KEY=xxxx
       # - TUNARR_URL=http://tunarr:8000
       # - TMDB_API_KEY=xxxx
       # - OLLAMA_URL=http://ollama:11434
@@ -130,23 +130,22 @@ volumes:
 
 Services can be configured via the UI (recommended) or environment variables.
 
-### Plex
+### Jellyfin
 
-**UI Configuration** (Settings → Services → Plex):
-- URL: Your Plex server address
-- Token: X-Plex-Token
+**UI Configuration** (Settings → Services → Jellyfin):
+- URL: Your Jellyfin server address
+- API Key: Jellyfin API key
 
-**Getting your Plex Token:**
+**Getting your Jellyfin API Key:**
 
-1. Sign in to Plex Web App
-2. Navigate to any library item
-3. Click the three dots menu → "Get Info"
-4. Click "View XML"
-5. Copy the `X-Plex-Token` value from the URL
+1. Sign in to Jellyfin as an administrator
+2. Go to Dashboard → API Keys
+3. Click "+" to create a new API key
+4. Name it (e.g. "SmarTunarr") and copy the generated key
 
 **Test Connection:**
 ```bash
-curl -H "X-Plex-Token: YOUR_TOKEN" http://YOUR_PLEX:32400/identity
+curl -H 'Authorization: MediaBrowser Token="YOUR_API_KEY"' http://YOUR_JELLYFIN:8096/System/Info
 ```
 
 ### Tunarr

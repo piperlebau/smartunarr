@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class ServiceConfigService:
     """Service for managing external service configurations."""
 
-    SUPPORTED_TYPES = ["plex", "tunarr", "tmdb", "ollama"]
+    SUPPORTED_TYPES = ["jellyfin", "tunarr", "tmdb", "ollama"]
 
     def __init__(self, session: AsyncSession) -> None:
         """Initialize service config service."""
@@ -26,7 +26,7 @@ class ServiceConfigService:
         Get service configuration by type.
 
         Args:
-            service_type: Service type (plex, tunarr, tmdb, ollama)
+            service_type: Service type (jellyfin, tunarr, tmdb, ollama)
 
         Returns:
             Service configuration or None

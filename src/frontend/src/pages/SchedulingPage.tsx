@@ -34,13 +34,13 @@ import type {
 type ScheduleType = 'programming' | 'scoring'
 type ScheduleMode = 'simple' | 'cron'
 type Frequency = 'daily' | 'weekly' | 'specific_days'
-type CacheMode = 'none' | 'plex_only' | 'tmdb_only' | 'cache_only' | 'full' | 'enrich_cache'
+type CacheMode = 'none' | 'jellyfin_only' | 'tmdb_only' | 'cache_only' | 'full' | 'enrich_cache'
 
 const cacheModeOptions: { value: CacheMode; labelKey: string; icon: React.ElementType; descKey: string }[] = [
   { value: 'cache_only', labelKey: 'programming.cacheModes.cacheOnly', icon: Database, descKey: 'programming.cacheModeDescriptions.cacheOnly' },
-  { value: 'full', labelKey: 'programming.cacheModes.cachePlex', icon: Database, descKey: 'programming.cacheModeDescriptions.cachePlex' },
+  { value: 'full', labelKey: 'programming.cacheModes.cacheJellyfin', icon: Database, descKey: 'programming.cacheModeDescriptions.cacheJellyfin' },
   { value: 'enrich_cache', labelKey: 'programming.cacheModes.enrich', icon: RefreshCw, descKey: 'programming.cacheModeDescriptions.enrich' },
-  { value: 'plex_only', labelKey: 'programming.cacheModes.plexOnly', icon: Zap, descKey: 'programming.cacheModeDescriptions.plexOnly' },
+  { value: 'jellyfin_only', labelKey: 'programming.cacheModes.jellyfinOnly', icon: Zap, descKey: 'programming.cacheModeDescriptions.jellyfinOnly' },
 ]
 
 const DAYS_OF_WEEK = [
@@ -320,7 +320,7 @@ export function SchedulingPage() {
 
       {/* Service status banner */}
       <ServiceStatusBanner
-        requiredServices={['tunarr', 'plex']}
+        requiredServices={['tunarr', 'jellyfin']}
         optionalServices={['tmdb', 'ollama']}
       />
 

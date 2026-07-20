@@ -115,8 +115,8 @@ class TunarrAdapter:
         self,
         channel_id: str,
         programs: list[dict[str, Any]],
-        plex_server_name: str = "NAS-Jérémie",
-        plex_server_id: str = "caa0e3c3-67d7-4533-8d8d-616ab86bf4bc",
+        jellyfin_server_name: str = "Jellyfin",
+        jellyfin_server_id: str = "",
     ) -> bool:
         """
         Update channel programming (replaces all programs).
@@ -125,9 +125,9 @@ class TunarrAdapter:
 
         Args:
             channel_id: Channel ID
-            programs: List of program items with plex_key, duration_ms, title, type
-            plex_server_name: Plex server name as configured in Tunarr
-            plex_server_id: Plex server UUID as configured in Tunarr
+            programs: List of program items with jellyfin_id, duration_ms, title, type
+            jellyfin_server_name: Jellyfin server name as configured in Tunarr
+            jellyfin_server_id: Jellyfin media source ID as configured in Tunarr
 
         Returns:
             True if successful
@@ -137,18 +137,9 @@ class TunarrAdapter:
         # Build programs in Tunarr format
         tunarr_programs = []
         for idx, p in enumerate(programs):
-            plex_key = p.get("content_plex_key") or p.get("plex_key", "")
+            jellyfin_id = p.get("content_jellyfin_id") or p.get("jellyfin_id", "")
 
-            # Extract numeric rating_key from plex_key
-            # /library/metadata/834170 -> 834170
-            if plex_key.startswith("/library/metadata/"):
-                rating_key = plex_key.split("/")[-1]
-            elif plex_key.startswith("/"):
-                rating_key = plex_key.split("/")[-1]
-            else:
-                rating_key = plex_key
-
-            unique_id = f"plex|{plex_server_name}|{rating_key}"
+            unique_id = f"jellyfin|{jellyfin_server_name}|{jellyfin_id}"
 
             # Map content type to subtype
             content_type = p.get("type", "movie")
@@ -156,10 +147,10 @@ class TunarrAdapter:
 
             program = {
                 "type": "content",
-                "externalSourceType": "plex",
-                "externalSourceId": plex_server_id,
-                "externalSourceName": plex_server_name,
-                "externalKey": rating_key,  # Use numeric rating_key, not full path
+                "externalSourceType": "jellyfin",
+                "externalSourceId": jellyfin_server_id,
+                "externalSourceName": jellyfin_server_name,
+                "externalKey": jellyfin_id,
                 "duration": p.get("duration_ms", 0),
                 "title": p.get("title", ""),
                 "subtype": subtype,
@@ -215,14 +206,20 @@ class TunarrAdapter:
         response.raise_for_status()
         return True
 
-    async def get_plex_servers(self) -> list[dict[str, Any]]:
-        """Get configured Plex servers in Tunarr."""
+    async def get_jellyfin_servers(self) -> list[dict[str, Any]]:
+        """Get configured Jellyfin media sources in Tunarr."""
         client = await self._get_client()
-        response = await client.get("/api/plex-servers")
+        response = await client.get("/api/media-sources")
         if response.status_code == 404:
-            return []
+            # Older Tunarr versions
+            response = await client.get("/api/jellyfin-servers")
+            if response.status_code == 404:
+                return []
+            response.raise_for_status()
+            return response.json()
         response.raise_for_status()
-        return response.json()
+        sources = response.json()
+        return [s for s in sources if s.get("type", "").lower() == "jellyfin"]
 
     async def get_filler_lists(self) -> list[dict[str, Any]]:
         """Get filler lists from Tunarr."""

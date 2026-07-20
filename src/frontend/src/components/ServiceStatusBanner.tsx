@@ -7,13 +7,13 @@ import type { ServiceConfig } from '@/types'
 
 interface ServiceStatusBannerProps {
   /** Services that are required for the page to work */
-  requiredServices?: ('tunarr' | 'plex')[]
+  requiredServices?: ('tunarr' | 'jellyfin')[]
   /** Services that are optional but enhance functionality */
   optionalServices?: ('tmdb' | 'ollama')[]
 }
 
 export function ServiceStatusBanner({
-  requiredServices = ['tunarr', 'plex'],
+  requiredServices = ['tunarr', 'jellyfin'],
   optionalServices = ['tmdb', 'ollama']
 }: ServiceStatusBannerProps) {
   const { t } = useTranslation()
@@ -51,7 +51,7 @@ export function ServiceStatusBanner({
 
   const serviceNames: Record<string, string> = {
     tunarr: 'Tunarr',
-    plex: 'Plex',
+    jellyfin: 'Jellyfin',
     tmdb: 'TMDB',
     ollama: 'Ollama'
   }
