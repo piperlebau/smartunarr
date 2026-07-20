@@ -7,7 +7,7 @@ services:
     image: ghcr.io/piperlebau/smartunarr:latest
     container_name: smartunarr
     ports:
-      - "3000:3000"  # Web UI (Frontend)
+      - "3003:3000"  # Web UI (Frontend)
       - "4273:4273"  # Backend API
     environment:
       # Database
@@ -15,9 +15,9 @@ services:
       # Logging
       - LOG_LEVEL=INFO
       # CORS - add your Unraid IP if needed
-      - CORS_ORIGINS=["http://localhost:3000","http://192.168.1.0/24:3000"]
+      - CORS_ORIGINS=["http://localhost:3003","http://192.168.1.0/24:3003"]
       # Optional: Set timezone
-      - TZ=Europe/Paris
+      - TZ=America/Los_Angeles
     volumes:
       # Persistent data storage in appdata
       - /mnt/user/appdata/smartunarr/data:/app/data
@@ -32,7 +32,7 @@ services:
       start_period: 30s
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/piperlebau/smartunarr/master/docs/screenshots/icon.png"
-      - "net.unraid.docker.webui=http://[IP]:[PORT:3000]/"
+      - "net.unraid.docker.webui=http://[IP]:[PORT:3003]/"
       - "net.unraid.docker.managed=compose"
 
 networks:
@@ -56,6 +56,6 @@ networks:
 # =============================================================================
 # 1. Create directory: mkdir -p /mnt/user/appdata/smartunarr/data
 # 2. Start: docker-compose -f docker-compose.unraid.yml up -d
-# 3. Access: http://YOUR_UNRAID_IP:3000
+# 3. Access: http://YOUR_UNRAID_IP:3003
 #
 # =============================================================================
