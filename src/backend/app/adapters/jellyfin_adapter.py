@@ -14,6 +14,15 @@ ITEM_FIELDS = (
     "CriticRating,Studios,People,RunTimeTicks,ProductionYear"
 )
 
+# Lighter field set for bulk library listings - People/Studios/Overview make
+# large responses slow enough to hit read timeouts
+LIST_FIELDS = (
+    "Genres,ProviderIds,OfficialRating,CommunityRating,"
+    "CriticRating,RunTimeTicks,ProductionYear"
+)
+
+PAGE_SIZE = 1000
+
 
 class JellyfinAdapter:
     """Adapter for Jellyfin API interactions."""
@@ -31,6 +40,7 @@ class JellyfinAdapter:
         self.api_key = api_key
         self.timeout = timeout
         self._client: httpx.Client | None = None
+        self._series_genres: dict[str, list[str]] = {}
 
     def _get_client(self) -> httpx.Client:
         """Get or create HTTP client."""
@@ -39,8 +49,9 @@ class JellyfinAdapter:
                 base_url=self.base_url,
                 headers={
                     "Authorization": f'MediaBrowser Token="{self.api_key}"',
+                    "X-Emby-Token": self.api_key,
                 },
-                timeout=self.timeout,
+                timeout=httpx.Timeout(self.timeout, read=120.0),
             )
         return self._client
 
@@ -126,25 +137,41 @@ class JellyfinAdapter:
         type_map = {"movie": "Movie", "episode": "Episode", "show": "Series"}
         include_types = type_map.get(content_type or "", "Movie,Episode")
 
-        params: dict[str, Any] = {
-            "ParentId": library_id,
-            "Recursive": "true",
-            "IncludeItemTypes": include_types,
-            "Fields": ITEM_FIELDS,
-        }
-        if limit:
-            params["Limit"] = limit
+        items: list[dict[str, Any]] = []
+        start_index = 0
+        while True:
+            page_size = PAGE_SIZE
+            if limit:
+                remaining = limit - len(items)
+                if remaining <= 0:
+                    break
+                page_size = min(page_size, remaining)
 
-        response = client.get("/Items", params=params)
-        if response.status_code == 404:
-            logger.warning(f"Library {library_id} not found")
-            return []
-        response.raise_for_status()
+            params: dict[str, Any] = {
+                "ParentId": library_id,
+                "Recursive": "true",
+                "IncludeItemTypes": include_types,
+                "Fields": LIST_FIELDS,
+                "StartIndex": start_index,
+                "Limit": page_size,
+            }
 
-        return [
-            self._item_to_dict(item, library_id)
-            for item in response.json().get("Items", [])
-        ]
+            response = client.get("/Items", params=params)
+            if response.status_code == 404:
+                logger.warning(f"Library {library_id} not found")
+                return items
+            response.raise_for_status()
+
+            data = response.json()
+            page_items = data.get("Items", [])
+            items.extend(self._item_to_dict(item, library_id) for item in page_items)
+
+            start_index += len(page_items)
+            total = data.get("TotalRecordCount", 0)
+            if not page_items or start_index >= total:
+                break
+
+        return items
 
     def _item_to_dict(self, item: dict[str, Any], library_id: str) -> dict[str, Any]:
         """Convert Jellyfin item to dictionary."""
@@ -176,13 +203,17 @@ class JellyfinAdapter:
             base["episode_number"] = episode
             base["title"] = f"{show_title} - S{season:02d}E{episode:02d} - {item.get('Name', '')}"
             # Episodes often have no genres - fall back to series genres
-            if not base["genres"] and item.get("SeriesId"):
-                try:
-                    series = self._fetch_item(item["SeriesId"])
-                    if series:
-                        base["genres"] = series.get("Genres", [])
-                except Exception:
-                    pass
+            series_id = item.get("SeriesId")
+            if not base["genres"] and series_id:
+                if series_id not in self._series_genres:
+                    try:
+                        series = self._fetch_item(series_id)
+                        self._series_genres[series_id] = (
+                            series.get("Genres", []) if series else []
+                        )
+                    except Exception:
+                        self._series_genres[series_id] = []
+                base["genres"] = self._series_genres[series_id]
 
         base["rating_key"] = item.get("Id", "")
 
